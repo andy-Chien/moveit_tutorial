@@ -41,6 +41,7 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/PlanningScene.h>
@@ -71,8 +72,9 @@ int main(int argc, char** argv)
   // .. _RobotModelLoader:
   //     http://docs.ros.org/melodic/api/moveit_ros_planning/html/classrobot__model__loader_1_1RobotModelLoader.html
   const std::string PLANNING_GROUP = "panda_arm";
-  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-  robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
+  robot_model_loader::RobotModelLoaderPtr robot_model_loader(
+      new robot_model_loader::RobotModelLoader("robot_description"));
+  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
   /* Create a RobotState and JointModelGroup to keep track of the current robot pose and planning group*/
   robot_state::RobotStatePtr robot_state(new robot_state::RobotState(robot_model));
   const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
@@ -84,6 +86,21 @@ int main(int argc, char** argv)
   // Configure a valid robot state
   planning_scene->getCurrentStateNonConst().setToDefaultValues(joint_model_group, "ready");
 
+
+  planning_scene_monitor::PlanningSceneMonitorPtr psm(
+      new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
+
+  /* listen for planning scene messages on topic /XXX and apply them to
+                       the internal planning scene accordingly */
+  psm->startSceneMonitor();
+  /* listens to changes of world geometry, collision objects, and (optionally) octomaps */
+  psm->startWorldGeometryMonitor();
+  /* listen to joint state updates as well as changes in attached collision objects
+                        and update the internal planning scene accordingly*/
+  psm->startStateMonitor();
+  planning_scene = psm->getPlanningScene();
+  // psm->updatesScene(planning_scene);
+  planning_scene->getAllowedCollisionMatrix().print(std::cout);
   // We will now construct a loader to load a planner, by name.
   // Note that we are using the ROS pluginlib library here.
   boost::scoped_ptr<pluginlib::ClassLoader<planning_interface::PlannerManager>> planner_plugin_loader;
@@ -146,6 +163,9 @@ int main(int argc, char** argv)
 
   /* We can also use visual_tools to wait for user input */
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+
+  planning_scene = psm->getPlanningScene();
+  planning_scene->getAllowedCollisionMatrix().print(std::cout);
 
   // Pose Goal
   // ^^^^^^^^^
