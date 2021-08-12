@@ -72,35 +72,48 @@ int main(int argc, char** argv)
   // .. _RobotModelLoader:
   //     http://docs.ros.org/melodic/api/moveit_ros_planning/html/classrobot__model__loader_1_1RobotModelLoader.html
   const std::string PLANNING_GROUP = "panda_arm";
+
   robot_model_loader::RobotModelLoaderPtr robot_model_loader(
       new robot_model_loader::RobotModelLoader("robot_description"));
-  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
-  /* Create a RobotState and JointModelGroup to keep track of the current robot pose and planning group*/
-  robot_state::RobotStatePtr robot_state(new robot_state::RobotState(robot_model));
-  const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
-
-  // Using the :moveit_core:`RobotModel`, we can construct a :planning_scene:`PlanningScene`
-  // that maintains the state of the world (including the robot).
-  planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
-
-  // Configure a valid robot state
-  planning_scene->getCurrentStateNonConst().setToDefaultValues(joint_model_group, "ready");
-
-
   planning_scene_monitor::PlanningSceneMonitorPtr psm(
       new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
 
   /* listen for planning scene messages on topic /XXX and apply them to
                        the internal planning scene accordingly */
-  psm->startSceneMonitor();
+  std::string scene_topic = "/move_group/monitored_planning_scene";
+  psm->startSceneMonitor(scene_topic);
   /* listens to changes of world geometry, collision objects, and (optionally) octomaps */
   psm->startWorldGeometryMonitor();
   /* listen to joint state updates as well as changes in attached collision objects
                         and update the internal planning scene accordingly*/
   psm->startStateMonitor();
-  planning_scene = psm->getPlanningScene();
+  
+  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
+  /* Create a RobotState and JointModelGroup to keep track of the current robot pose and planning group*/
+  // robot_state::RobotStatePtr robot_state(new robot_state::RobotState(robot_model));new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState())
+  robot_state::RobotStatePtr robot_state(new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState()));
+
+  const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
+
+  // Using the :moveit_core:`RobotModel`, we can construct a :planning_scene:`PlanningScene`
+  // that maintains the state of the world (including the robot).
+  // planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
+
+  // Configure a valid robot state
+  // planning_scene->getCurrentStateNonConst().setToDefaultValues(joint_model_group, "ready");
+
+
+  // planning_scene = psm->getPlanningScene();
+  // planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
+  // planning_scene->getCurrentStateNonConst().setToDefaultValues(joint_model_group, "ready");
+  // planning_scene::PlanningScenePtr planning_scene;
+
+  if (psm->updatesScene(planning_scene_monitor::LockedPlanningSceneRO(psm)))
+    std::cout<<"Scene updated"<<std::endl;
+  else
+    std::cout<<"Scene not updated"<<std::endl;
   // psm->updatesScene(planning_scene);
-  planning_scene->getAllowedCollisionMatrix().print(std::cout);
+  planning_scene_monitor::LockedPlanningSceneRO(psm)->getAllowedCollisionMatrix().print(std::cout);
   // We will now construct a loader to load a planner, by name.
   // Note that we are using the ROS pluginlib library here.
   boost::scoped_ptr<pluginlib::ClassLoader<planning_interface::PlannerManager>> planner_plugin_loader;
@@ -164,14 +177,26 @@ int main(int argc, char** argv)
   /* We can also use visual_tools to wait for user input */
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  planning_scene = psm->getPlanningScene();
-  planning_scene->getAllowedCollisionMatrix().print(std::cout);
+  collision_detection::CollisionRequest col_req;
+  collision_detection::CollisionResult col_res;
+  ros::Time begin = ros::Time::now();
+  planning_scene_monitor::LockedPlanningSceneRO(psm)->checkCollision(col_req, col_res);
+  ros::Time end = ros::Time::now();
+  std::cout<<"================================== collision check spend "<<(end - begin).toSec()<<" sec."<<std::endl;
+  std::cout<<col_res.collision<<std::endl;
+
+  // planning_scene = psm->getPlanningScene();
+  if (psm->updatesScene(planning_scene_monitor::LockedPlanningSceneRO(psm)))
+    std::cout<<"Scene updated"<<std::endl;
+  else
+    std::cout<<"Scene not updated"<<std::endl;
+  planning_scene_monitor::LockedPlanningSceneRO(psm)->getAllowedCollisionMatrix().print(std::cout);
 
   // Pose Goal
   // ^^^^^^^^^
   // We will now create a motion plan request for the arm of the Panda
   // specifying the desired pose of the end-effector as input.
-  visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
+  // visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
   visual_tools.trigger();
   planning_interface::MotionPlanRequest req;
   planning_interface::MotionPlanResponse res;
@@ -203,9 +228,12 @@ int main(int argc, char** argv)
   // We now construct a planning context that encapsulate the scene,
   // the request and the response. We call the planner using this
   // planning context
-  planning_interface::PlanningContextPtr context =
-      planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
+  planning_interface::PlanningContextPtr context;
+  {
+  planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
+  context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
   context->solve(res);
+  }
   if (res.error_code_.val != res.error_code_.SUCCESS)
   {
     ROS_ERROR("Could not compute plan successfully");
@@ -230,10 +258,10 @@ int main(int argc, char** argv)
 
   /* Set the state in the planning scene to the final state of the last plan */
   robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  planning_scene->setCurrentState(*robot_state.get());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setCurrentState(*robot_state.get());
 
   // Display the goal state
-  visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
+  // visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
   visual_tools.publishAxisLabeled(pose.pose, "goal_1");
   visual_tools.publishText(text_pose, "Pose Goal (1)", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
@@ -253,9 +281,12 @@ int main(int argc, char** argv)
 
   // Call the planner and visualize the trajectory
   /* Re-construct the planning context */
+  {
+  planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
   context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
   /* Call the Planner */
   context->solve(res);
+  }
   /* Check that the planning was successful */
   if (res.error_code_.val != res.error_code_.SUCCESS)
   {
@@ -274,10 +305,10 @@ int main(int argc, char** argv)
   /* We will add more goals. But first, set the state in the planning
      scene to the final state of the last plan */
   robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  planning_scene->setCurrentState(*robot_state.get());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setCurrentState(*robot_state.get());
 
   // Display the goal state
-  visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
+  // visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
   visual_tools.publishAxisLabeled(pose.pose, "goal_2");
   visual_tools.publishText(text_pose, "Joint Space Goal (2)", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
@@ -288,8 +319,11 @@ int main(int argc, char** argv)
   /* Now, we go back to the first goal to prepare for orientation constrained planning */
   req.goal_constraints.clear();
   req.goal_constraints.push_back(pose_goal);
+  {
+  planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
   context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
   context->solve(res);
+  }
   res.getMessage(response);
 
   display_trajectory.trajectory.push_back(response.trajectory);
@@ -299,10 +333,10 @@ int main(int argc, char** argv)
 
   /* Set the state in the planning scene to the final state of the last plan */
   robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  planning_scene->setCurrentState(*robot_state.get());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setCurrentState(*robot_state.get());
 
   // Display the goal state
-  visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
+  // visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
   visual_tools.trigger();
 
   /* Wait for user input */
@@ -345,8 +379,11 @@ int main(int argc, char** argv)
       req.workspace_parameters.max_corner.z = 2.0;
 
   // Call the planner and visualize all the plans created so far.
+  {
+  planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
   context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
   context->solve(res);
+  }
   res.getMessage(response);
   display_trajectory.trajectory.push_back(response.trajectory);
   visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
@@ -355,10 +392,10 @@ int main(int argc, char** argv)
 
   /* Set the state in the planning scene to the final state of the last plan */
   robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  planning_scene->setCurrentState(*robot_state.get());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setCurrentState(*robot_state.get());
 
   // Display the goal state
-  visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
+  // visual_tools.publishRobotState(planning_scene->getCurrentStateNonConst(), rviz_visual_tools::GREEN);
   visual_tools.publishAxisLabeled(pose.pose, "goal_3");
   visual_tools.publishText(text_pose, "Orientation Constrained Motion Plan (3)", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
