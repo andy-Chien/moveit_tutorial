@@ -50,13 +50,13 @@
 
 namespace collision_detection
 {
-class CollisionWorldFCL : public CollisionWorld
+class CollisionWorldFCLL : public CollisionWorld
 {
 public:
-  CollisionWorldFCL();
-  explicit CollisionWorldFCL(const WorldPtr& world);
-  CollisionWorldFCL(const CollisionWorldFCL& other, const WorldPtr& world);
-  ~CollisionWorldFCL() override;
+  CollisionWorldFCLL();
+  explicit CollisionWorldFCLL(const WorldPtr& world);
+  CollisionWorldFCLL(const CollisionWorldFCLL& other, const WorldPtr& world);
+  ~CollisionWorldFCLL() override;
 
   void print_fuck()
   {

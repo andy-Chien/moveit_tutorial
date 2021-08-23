@@ -1,8 +1,8 @@
 <library path="lib/libcollision_detector_fcl_plugin_test">
-  <class name="FCL" type="collision_detection::CollisionDetectorFCLPluginLoader"
+  <class name="FCLL" type="collision_detection::CollisionDetectorFCLLPluginLoader"
   base_class_type="collision_detection::CollisionPlugin">
     <description>
-      FCL Collision Detector, default for MoveIt test.
+      FCLL Collision Detector, default for MoveIt test.
     </description>
   </class>
 </library>

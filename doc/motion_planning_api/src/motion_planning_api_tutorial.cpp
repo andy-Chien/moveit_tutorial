@@ -48,6 +48,7 @@
 #include <moveit_visual_tools/moveit_visual_tools.h>
 #include <moveit_tutorials/collision_detection_fcll/collision_detector_allocator_fcl.h>
 #include <moveit_tutorials/collision_detection_fcll/collision_world_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
 #include <boost/scoped_ptr.hpp>
 
 int main(int argc, char** argv)
@@ -72,6 +73,7 @@ int main(int argc, char** argv)
   //
   // .. _RobotModelLoader:
   //     http://docs.ros.org/melodic/api/moveit_ros_planning/html/classrobot__model__loader_1_1RobotModelLoader.html
+  
   const std::string PLANNING_GROUP = "panda_arm";
 
   robot_model_loader::RobotModelLoaderPtr robot_model_loader(
@@ -79,8 +81,10 @@ int main(int argc, char** argv)
 
   robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
   planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
-  planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
-  // planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
+  // collision_detection::CollisionDetectorAllocatorPtr aa = collision_detection::CollisionDetectorAllocatorFCLL::create();
+  // std::cout << aa->getName() << std::endl;
+  // planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
+  planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
 
   collision_detection::CollisionResult t_res;
   collision_detection::CollisionRequest t_req;

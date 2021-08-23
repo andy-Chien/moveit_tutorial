@@ -3,11 +3,11 @@
 
 namespace collision_detection
 {
-bool CollisionDetectorFCLPluginLoader::initialize(const planning_scene::PlanningScenePtr& scene, bool exclusive) const
+bool CollisionDetectorFCLLPluginLoader::initialize(const planning_scene::PlanningScenePtr& scene, bool exclusive) const
 {
   scene->setActiveCollisionDetector(CollisionDetectorAllocatorFCLL::create(), exclusive);
   return true;
 }
 }  // namespace collision_detection
 
-PLUGINLIB_EXPORT_CLASS(collision_detection::CollisionDetectorFCLPluginLoader, collision_detection::CollisionPlugin)
+PLUGINLIB_EXPORT_CLASS(collision_detection::CollisionDetectorFCLLPluginLoader, collision_detection::CollisionPlugin)

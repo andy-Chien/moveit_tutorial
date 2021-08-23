@@ -41,14 +41,14 @@
 
 namespace collision_detection
 {
-class CollisionRobotFCL : public CollisionRobot
+class CollisionRobotFCLL : public CollisionRobot
 {
-  friend class CollisionWorldFCL;
+  friend class CollisionWorldFCLL;
 
 public:
-  CollisionRobotFCL(const robot_model::RobotModelConstPtr& robot_model, double padding = 0.0, double scale = 1.0);
+  CollisionRobotFCLL(const robot_model::RobotModelConstPtr& robot_model, double padding = 0.0, double scale = 1.0);
 
-  CollisionRobotFCL(const CollisionRobotFCL& other);
+  CollisionRobotFCLL(const CollisionRobotFCLL& other);
 
   void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
                           const robot_state::RobotState& state) const override;

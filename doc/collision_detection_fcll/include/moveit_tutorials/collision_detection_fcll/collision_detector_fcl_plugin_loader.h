@@ -10,7 +10,7 @@
 
 namespace collision_detection
 {
-class CollisionDetectorFCLPluginLoader : public CollisionPlugin
+class CollisionDetectorFCLLPluginLoader : public CollisionPlugin
 {
 public:
   virtual bool initialize(const planning_scene::PlanningScenePtr& scene, bool exclusive) const;

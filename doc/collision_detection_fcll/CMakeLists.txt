@@ -22,7 +22,7 @@ install(TARGETS ${MOVEIT_LIB_NAME} collision_detector_fcl_plugin_test
 
 install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
-install(FILES ./collision_detector_fcl_description_test.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(FILES ./collision_detector_fcll_description_test.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_fcl_collision_detection test/test_fcl_collision_detection.cpp)

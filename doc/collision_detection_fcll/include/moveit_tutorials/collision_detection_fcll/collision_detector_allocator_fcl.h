@@ -45,9 +45,10 @@ namespace collision_detection
 {
 /** \brief An allocator for FCL collision detectors */
 class CollisionDetectorAllocatorFCLL
-  : public CollisionDetectorAllocatorTemplate<CollisionWorldFCL, CollisionRobotFCL, CollisionDetectorAllocatorFCLL>
+  : public CollisionDetectorAllocatorTemplate<CollisionWorldFCLL, CollisionRobotFCLL, CollisionDetectorAllocatorFCLL>
 {
 public:
+  // const std::string& getName() const override;
   static const std::string NAME;  // defined in collision_world_fcl.cpp
   // static CollisionDetectorAllocatorPtr create()
   // {
