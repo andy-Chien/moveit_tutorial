@@ -34,10 +34,10 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCL_COLLISION_ROBOT_
-#define MOVEIT_COLLISION_DETECTION_FCL_COLLISION_ROBOT_
+#ifndef MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_ROBOT_
+#define MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_ROBOT_
 
-#include <moveit/collision_detection_fcl/collision_common.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_common.h>
 
 namespace collision_detection
 {

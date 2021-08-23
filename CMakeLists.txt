@@ -72,9 +72,18 @@ find_package(urdfdom_headers REQUIRED)
 #     EIGEN3
 # )
 
+pkg_check_modules(LIBFCL_PC REQUIRED fcl)
+set(LIBFCL_INCLUDE_DIRS ${LIBFCL_PC_INCLUDE_DIRS})
+# find *absolute* paths to LIBFCL_LIBRARIES
+set(LIBFCL_LIBRARIES)
+foreach(_lib ${LIBFCL_PC_LIBRARIES})
+  find_library(_lib_${_lib} ${_lib} HINTS ${LIBFCL_PC_LIBRARY_DIRS})
+  list(APPEND LIBFCL_LIBRARIES ${_lib_${_lib}})
+endforeach()
+
 set(THIS_PACKAGE_INCLUDE_DIRS
     doc/interactivity/include
-    doc/collision_detection_fcl/include
+    doc/collision_detection_fcll/include
     # background_processing/include
     # exceptions/include
     # backtrace/include
@@ -105,8 +114,9 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 catkin_package(
   INCLUDE_DIRS
+    ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
-    moveit_collision_detection_fcl
+    moveit_collision_detection_fcll
   CATKIN_DEPENDS
     eigen_stl_containers
     geometric_shapes
@@ -156,4 +166,4 @@ add_subdirectory(doc/state_display)
 add_subdirectory(doc/interactivity)
 add_subdirectory(doc/pick_place)
 add_subdirectory(doc/perception_pipeline)
-add_subdirectory(doc/collision_detection_fcl)
+add_subdirectory(doc/collision_detection_fcll)

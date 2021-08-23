@@ -34,11 +34,11 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCL_COLLISION_WORLD_FCL_
-#define MOVEIT_COLLISION_DETECTION_FCL_COLLISION_WORLD_FCL_
+#ifndef MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
+#define MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
 
-#include <moveit/collision_detection_fcl/collision_robot_fcl.h>
-#include <moveit/collision_detection_fcl/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/fcl_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_collision_manager.h>
@@ -57,6 +57,11 @@ public:
   explicit CollisionWorldFCL(const WorldPtr& world);
   CollisionWorldFCL(const CollisionWorldFCL& other, const WorldPtr& world);
   ~CollisionWorldFCL() override;
+
+  void print_fuck()
+  {
+    std::cout << "FUCKKKKK~!!!!!!!!!!!" << std::endl;
+  };
 
   void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                            const robot_state::RobotState& state) const override;

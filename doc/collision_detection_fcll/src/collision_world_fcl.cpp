@@ -34,9 +34,9 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/collision_detection_fcl/collision_world_fcl.h>
-#include <moveit/collision_detection_fcl/collision_detector_allocator_fcl.h>
-#include <moveit/collision_detection_fcl/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_world_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_detector_allocator_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/fcl_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/geometry/geometric_shape_to_BVH_model.h>
@@ -54,10 +54,11 @@
 
 namespace collision_detection
 {
-const std::string CollisionDetectorAllocatorFCL::NAME("FCL");
+const std::string CollisionDetectorAllocatorFCLL::NAME("FCLL");
 
 CollisionWorldFCL::CollisionWorldFCL() : CollisionWorld()
 {
+  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -68,6 +69,7 @@ CollisionWorldFCL::CollisionWorldFCL() : CollisionWorld()
 
 CollisionWorldFCL::CollisionWorldFCL(const WorldPtr& world) : CollisionWorld(world)
 {
+  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -80,6 +82,7 @@ CollisionWorldFCL::CollisionWorldFCL(const WorldPtr& world) : CollisionWorld(wor
 CollisionWorldFCL::CollisionWorldFCL(const CollisionWorldFCL& other, const WorldPtr& world)
   : CollisionWorld(other, world)
 {
+  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -130,6 +133,7 @@ void CollisionWorldFCL::checkRobotCollisionHelper(const CollisionRequest& req, C
                                                   const CollisionRobot& robot, const robot_state::RobotState& state,
                                                   const AllowedCollisionMatrix* acm) const
 {
+  std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   const CollisionRobotFCL& robot_fcl = dynamic_cast<const CollisionRobotFCL&>(robot);
   FCLObject fcl_obj;
   robot_fcl.constructFCLObject(state, fcl_obj);
@@ -168,6 +172,7 @@ void CollisionWorldFCL::checkWorldCollisionHelper(const CollisionRequest& req, C
                                                   const CollisionWorld& other_world,
                                                   const AllowedCollisionMatrix* acm) const
 {
+  std::cout << "===================================================================================" << std::endl;
   const CollisionWorldFCL& other_fcl_world = dynamic_cast<const CollisionWorldFCL&>(other_world);
   CollisionData cd(&req, &res, acm);
   manager_->collide(other_fcl_world.manager_.get(), &cd, &collisionCallback);

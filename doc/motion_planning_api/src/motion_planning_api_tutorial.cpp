@@ -46,7 +46,8 @@
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
-
+#include <moveit_tutorials/collision_detection_fcll/collision_detector_allocator_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_world_fcl.h>
 #include <boost/scoped_ptr.hpp>
 
 int main(int argc, char** argv)
@@ -75,8 +76,23 @@ int main(int argc, char** argv)
 
   robot_model_loader::RobotModelLoaderPtr robot_model_loader(
       new robot_model_loader::RobotModelLoader("robot_description"));
+
+  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
+  planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
+  planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
+  // planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
+
+  collision_detection::CollisionResult t_res;
+  collision_detection::CollisionRequest t_req;
+  t_req.contacts = true;
+  robot_state::RobotState& t_state = planning_scene->getCurrentStateNonConst();
+  std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+  planning_scene->checkCollision(t_req, t_res);
+  std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+  // planning_scene->getCollisionWorld()->checkRobotCollision(t_req, t_res, planning_scene->getCollisionRobot(), t_state);
+  // planning_scene->getCollisionWorld()->print_fuck();
   planning_scene_monitor::PlanningSceneMonitorPtr psm(
-      new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
+      new planning_scene_monitor::PlanningSceneMonitor(planning_scene, robot_model_loader));
 
   /* listen for planning scene messages on topic /XXX and apply them to
                        the internal planning scene accordingly */
@@ -88,17 +104,18 @@ int main(int argc, char** argv)
                         and update the internal planning scene accordingly*/
   psm->startStateMonitor();
   
-  robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
+  // robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
   /* Create a RobotState and JointModelGroup to keep track of the current robot pose and planning group*/
   // robot_state::RobotStatePtr robot_state(new robot_state::RobotState(robot_model));new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState())
   robot_state::RobotStatePtr robot_state(new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState()));
 
   const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
 
   // Using the :moveit_core:`RobotModel`, we can construct a :planning_scene:`PlanningScene`
   // that maintains the state of the world (including the robot).
-  // planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
-
+  
   // Configure a valid robot state
   // planning_scene->getCurrentStateNonConst().setToDefaultValues(joint_model_group, "ready");
 
@@ -179,6 +196,7 @@ int main(int argc, char** argv)
 
   collision_detection::CollisionRequest col_req;
   collision_detection::CollisionResult col_res;
+  col_req.contacts = true;
   ros::Time begin = ros::Time::now();
   planning_scene_monitor::LockedPlanningSceneRO(psm)->checkCollision(col_req, col_res);
   ros::Time end = ros::Time::now();

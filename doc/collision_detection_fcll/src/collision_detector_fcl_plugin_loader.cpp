@@ -1,11 +1,11 @@
-#include <moveit/collision_detection_fcl/collision_detector_fcl_plugin_loader.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_detector_fcl_plugin_loader.h>
 #include <pluginlib/class_list_macros.h>
 
 namespace collision_detection
 {
 bool CollisionDetectorFCLPluginLoader::initialize(const planning_scene::PlanningScenePtr& scene, bool exclusive) const
 {
-  scene->setActiveCollisionDetector(CollisionDetectorAllocatorFCL::create(), exclusive);
+  scene->setActiveCollisionDetector(CollisionDetectorAllocatorFCLL::create(), exclusive);
   return true;
 }
 }  // namespace collision_detection

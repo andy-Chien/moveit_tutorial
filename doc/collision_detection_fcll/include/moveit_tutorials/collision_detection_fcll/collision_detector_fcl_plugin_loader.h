@@ -2,11 +2,11 @@
  * collision_detector_fcl_plugin_loader.h
  */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCL_COLLISION_DETECTOR_FCL_PLUGIN_LOADER_H_
-#define MOVEIT_COLLISION_DETECTION_FCL_COLLISION_DETECTOR_FCL_PLUGIN_LOADER_H_
+#ifndef MOVEIT_COLLISION_DETECTION_FCL_COLLISION_DETECTOR_FCLL_PLUGIN_LOADER_H_
+#define MOVEIT_COLLISION_DETECTION_FCL_COLLISION_DETECTOR_FCLL_PLUGIN_LOADER_H_
 
 #include <moveit/collision_detection/collision_plugin.h>
-#include <moveit/collision_detection_fcl/collision_detector_allocator_fcl.h>
+#include <moveit_tutorials/collision_detection_fcll/collision_detector_allocator_fcl.h>
 
 namespace collision_detection
 {

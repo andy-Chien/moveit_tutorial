@@ -101,5 +101,8 @@
   <run_depend>tf2_geometry_msgs</run_depend>
 
   <test_depend>moveit_resources_panda_moveit_config</test_depend>
+  <export>
+    <moveit_core plugin="${prefix}/doc/collision_detection_fcll/collision_detector_fcl_description_test.xml"/>
+  </export>
 
 </package>
