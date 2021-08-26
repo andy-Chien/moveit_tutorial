@@ -63,7 +63,6 @@ const std::string CollisionDetectorAllocatorFCLL::NAME("FUCK");
 
 CollisionWorldFCLL::CollisionWorldFCLL() : CollisionWorld()
 {
-  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -74,7 +73,6 @@ CollisionWorldFCLL::CollisionWorldFCLL() : CollisionWorld()
 
 CollisionWorldFCLL::CollisionWorldFCLL(const WorldPtr& world) : CollisionWorld(world)
 {
-  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -87,7 +85,6 @@ CollisionWorldFCLL::CollisionWorldFCLL(const WorldPtr& world) : CollisionWorld(w
 CollisionWorldFCLL::CollisionWorldFCLL(const CollisionWorldFCLL& other, const WorldPtr& world)
   : CollisionWorld(other, world)
 {
-  std::cout << "fffffffffffffffffffffffffffff" << std::endl;
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);

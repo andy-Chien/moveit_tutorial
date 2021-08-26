@@ -90,9 +90,7 @@ int main(int argc, char** argv)
   collision_detection::CollisionRequest t_req;
   t_req.contacts = true;
   robot_state::RobotState& t_state = planning_scene->getCurrentStateNonConst();
-  std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
   planning_scene->checkCollision(t_req, t_res);
-  std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
   // planning_scene->getCollisionWorld()->checkRobotCollision(t_req, t_res, planning_scene->getCollisionRobot(), t_state);
   // planning_scene->getCollisionWorld()->print_fuck();
   planning_scene_monitor::PlanningSceneMonitorPtr psm(

@@ -22,6 +22,10 @@ find_package(catkin REQUIRED
     tf2_geometry_msgs
 )
 
+find_package(CUDA REQUIRED)
+find_package(icl_core REQUIRED )
+find_package(gpu_voxels REQUIRED)
+# FIND_PACKAGE(orocos_kdl REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
 
@@ -45,8 +49,6 @@ find_package(octomap REQUIRED)
 find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 
-# catkin_python_setup()
-
 # set(VERSION_FILE_PATH "${CATKIN_DEVEL_PREFIX}/include")
 # # Pass the folder of the generated version.h to catkin_package() for export in devel-space
 # # This is how gencpp adds the folder of generated message code to the include dirs, see:
@@ -54,62 +56,9 @@ find_package(urdfdom_headers REQUIRED)
 # list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${VERSION_FILE_PATH})
 # file(MAKE_DIRECTORY "${VERSION_FILE_PATH}/moveit_tutorials")
 
-
-# set(THIS_PACKAGE_INCLUDE_DIRS
-#   doc/interactivity/include
-# )
-
-# catkin_package(
-#   LIBRARIES
-#   INCLUDE_DIRS
-#   CATKIN_DEPENDS
-#     moveit_core
-#     moveit_visual_tools
-#     moveit_ros_planning_interface
-#     interactive_markers
-#     tf2_geometry_msgs
-#   DEPENDS
-#     EIGEN3
-# )
-
-pkg_check_modules(LIBFCL_PC REQUIRED fcl)
-set(LIBFCL_INCLUDE_DIRS ${LIBFCL_PC_INCLUDE_DIRS})
-# find *absolute* paths to LIBFCL_LIBRARIES
-set(LIBFCL_LIBRARIES)
-foreach(_lib ${LIBFCL_PC_LIBRARIES})
-  find_library(_lib_${_lib} ${_lib} HINTS ${LIBFCL_PC_LIBRARY_DIRS})
-  list(APPEND LIBFCL_LIBRARIES ${_lib_${_lib}})
-endforeach()
-
 set(THIS_PACKAGE_INCLUDE_DIRS
     doc/interactivity/include
     doc/collision_detection_fcll/include
-    # background_processing/include
-    # exceptions/include
-    # backtrace/include
-    # collision_detection/include
-    # collision_detection_fcl/include
-    # constraint_samplers/include
-    # controller_manager/include
-    # distance_field/include
-    # collision_distance_field/include
-    # dynamics_solver/include
-    # kinematics_base/include
-    # kinematics_metrics/include
-    # robot_model/include
-    # transforms/include
-    # robot_state/include
-    # robot_trajectory/include
-    # kinematic_constraints/include
-    # macros/include
-    # planning_interface/include
-    # planning_request_adapter/include
-    # planning_scene/include
-    # profiler/include
-    # python/tools/include
-    # sensor_manager/include
-    # trajectory_processing/include
-    # utils/include
 )
 
 catkin_package(
@@ -144,13 +93,30 @@ catkin_package(
     OCTOMAP
     urdfdom
     urdfdom_headers
-    )
+  )
+
+add_definitions(
+  ${icl_core_DEFINITIONS}
+  ${gpu_voxels_DEFINITIONS}
+)
+message("icl_core_DEFINITIONS ${icl_core_DEFINITIONS}")
+
 
 ###########
 ## Build ##
 ###########
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
+include_directories(
+  ${THIS_PACKAGE_INCLUDE_DIRS} 
+  PUBLIC ${catkin_INCLUDE_DIRS} 
+  PUBLIC ${Boost_INCLUDE_DIR} 
+  PUBLIC ${EIGEN3_INCLUDE_DIRS}
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+  PUBLIC ${gpu_voxels_INCLUDE_DIRS}
+  # ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+  PUBLIC ${CUDA_INCLUDE_DIRS}
+)
+
 
 add_subdirectory(doc/kinematics)
 add_subdirectory(doc/robot_model_and_robot_state)
@@ -167,3 +133,4 @@ add_subdirectory(doc/interactivity)
 add_subdirectory(doc/pick_place)
 add_subdirectory(doc/perception_pipeline)
 add_subdirectory(doc/collision_detection_fcll)
+add_subdirectory(example_how_to_link)

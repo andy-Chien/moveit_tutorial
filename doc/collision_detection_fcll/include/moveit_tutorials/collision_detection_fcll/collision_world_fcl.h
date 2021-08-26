@@ -37,6 +37,24 @@
 #ifndef MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
 #define MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
 
+#include <cstdlib>
+#include <signal.h>
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <gpu_voxels/GpuVoxels.h>
+#include <gpu_voxels/helpers/MetaPointCloud.h>
+#include <gpu_voxels/robot/urdf_robot/urdf_robot.h>
+#include <gpu_voxels/logging/logging_gpu_voxels.h>
+
+#include <ros/ros.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_types.h>
+#include <icl_core_config/Config.h>
+
+#include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
+
 #include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
 #include <moveit_tutorials/collision_detection_fcll/fcl_compat.h>
 
