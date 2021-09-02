@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/voxel_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_dynamic_AABB_tree.h>
@@ -54,7 +54,7 @@ CollisionRobotVoxel::CollisionRobotVoxel(const robot_model::RobotModelConstPtr& 
   for (auto link : links)
     for (std::size_t j = 0; j < link->getShapes().size(); ++j)
     {
-      FCLGeometryConstPtr g = createCollisionGeometry(link->getShapes()[j], getLinkScale(link->getName()),
+      VoxelGeometryConstPtr g = createCollisionGeometry(link->getShapes()[j], getLinkScale(link->getName()),
                                                       getLinkPadding(link->getName()), link, j);
       if (g)
       {
@@ -65,10 +65,10 @@ CollisionRobotVoxel::CollisionRobotVoxel(const robot_model::RobotModelConstPtr& 
         // Every time this object is created, g->computeLocalAABB() is called  which is
         // very expensive and should only be calculated once. To update the AABB, use the
         // collObj->setTransform and then call collObj->computeAABB() to transform the AABB.
-        fcl_objs_[index] = FCLCollisionObjectConstPtr(new fcl::CollisionObjectd(g->collision_geometry_));
+        fcl_objs_[index] = VoxelCollisionObjectConstPtr(new fcl::CollisionObjectd(g->collision_geometry_));
       }
       else
-        ROS_ERROR_NAMED("collision_detection.fcl", "Unable to construct collision geometry for link '%s'",
+        ROS_ERROR_NAMED("collision_detection.voxel", "Unable to construct collision geometry for link '%s'",
                         link->getName().c_str());
     }
 }
@@ -80,19 +80,19 @@ CollisionRobotVoxel::CollisionRobotVoxel(const CollisionRobotVoxel& other) : Col
 }
 
 void CollisionRobotVoxel::getAttachedBodyObjects(const robot_state::AttachedBody* ab,
-                                               std::vector<FCLGeometryConstPtr>& geoms) const
+                                               std::vector<VoxelGeometryConstPtr>& geoms) const
 {
   const std::vector<shapes::ShapeConstPtr>& shapes = ab->getShapes();
   for (std::size_t i = 0; i < shapes.size(); ++i)
   {
-    FCLGeometryConstPtr co = createCollisionGeometry(shapes[i], getLinkScale(ab->getAttachedLinkName()),
+    VoxelGeometryConstPtr co = createCollisionGeometry(shapes[i], getLinkScale(ab->getAttachedLinkName()),
                                                      getLinkPadding(ab->getAttachedLinkName()), ab, i);
     if (co)
       geoms.push_back(co);
   }
 }
 
-void CollisionRobotVoxel::constructFCLObject(const robot_state::RobotState& state, FCLObject& fcl_obj) const
+void CollisionRobotVoxel::constructVoxelObject(const robot_state::RobotState& state, VoxelObject& fcl_obj) const
 {
   fcl_obj.collision_objects_.reserve(geoms_.size());
   fcl::Transform3d fcl_tf;
@@ -100,13 +100,13 @@ void CollisionRobotVoxel::constructFCLObject(const robot_state::RobotState& stat
   for (std::size_t i = 0; i < geoms_.size(); ++i)
     if (geoms_[i] && geoms_[i]->collision_geometry_)
     {
-      transform2fcl(state.getCollisionBodyTransform(geoms_[i]->collision_geometry_data_->ptr.link,
+      transform2voxel(state.getCollisionBodyTransform(geoms_[i]->collision_geometry_data_->ptr.link,
                                                     geoms_[i]->collision_geometry_data_->shape_index),
                     fcl_tf);
       auto coll_obj = new fcl::CollisionObjectd(*fcl_objs_[i]);
       coll_obj->setTransform(fcl_tf);
       coll_obj->computeAABB();
-      fcl_obj.collision_objects_.push_back(FCLCollisionObjectPtr(coll_obj));
+      fcl_obj.collision_objects_.push_back(VoxelCollisionObjectPtr(coll_obj));
     }
 
   // TODO: Implement a method for caching fcl::CollisionObject's for robot_state::AttachedBody's
@@ -114,15 +114,15 @@ void CollisionRobotVoxel::constructFCLObject(const robot_state::RobotState& stat
   state.getAttachedBodies(ab);
   for (auto& body : ab)
   {
-    std::vector<FCLGeometryConstPtr> objs;
+    std::vector<VoxelGeometryConstPtr> objs;
     getAttachedBodyObjects(body, objs);
     const EigenSTL::vector_Isometry3d& ab_t = body->getGlobalCollisionBodyTransforms();
     for (std::size_t k = 0; k < objs.size(); ++k)
       if (objs[k]->collision_geometry_)
       {
-        transform2fcl(ab_t[k], fcl_tf);
+        transform2voxel(ab_t[k], fcl_tf);
         fcl_obj.collision_objects_.push_back(
-            FCLCollisionObjectPtr(new fcl::CollisionObjectd(objs[k]->collision_geometry_, fcl_tf)));
+            VoxelCollisionObjectPtr(new fcl::CollisionObjectd(objs[k]->collision_geometry_, fcl_tf)));
         // we copy the shared ptr to the CollisionGeometryData, as this is not stored by the class itself,
         // and would be destroyed when objs goes out of scope.
         fcl_obj.collision_geometry_.push_back(objs[k]);
@@ -130,12 +130,12 @@ void CollisionRobotVoxel::constructFCLObject(const robot_state::RobotState& stat
   }
 }
 
-void CollisionRobotVoxel::allocSelfCollisionBroadPhase(const robot_state::RobotState& state, FCLManager& manager) const
+void CollisionRobotVoxel::allocSelfCollisionBroadPhase(const robot_state::RobotState& state, VoxelManager& manager) const
 {
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager.manager_.reset(m);
-  constructFCLObject(state, manager.object_);
+  constructVoxelObject(state, manager.object_);
   manager.object_.registerTo(manager.manager_.get());
   // manager.manager_->update();
 }
@@ -157,21 +157,21 @@ void CollisionRobotVoxel::checkSelfCollision(const CollisionRequest& req, Collis
                                            const robot_state::RobotState& state1,
                                            const robot_state::RobotState& state2) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionRobotVoxel::checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
                                            const robot_state::RobotState& state1, const robot_state::RobotState& state2,
                                            const AllowedCollisionMatrix& acm) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionRobotVoxel::checkSelfCollisionHelper(const CollisionRequest& req, CollisionResult& res,
                                                  const robot_state::RobotState& state,
                                                  const AllowedCollisionMatrix* acm) const
 {
-  FCLManager manager;
+  VoxelManager manager;
   allocSelfCollisionBroadPhase(state, manager);
   CollisionData cd(&req, &res, acm);
   cd.enableGroup(getRobotModel());
@@ -210,7 +210,7 @@ void CollisionRobotVoxel::checkOtherCollision(const CollisionRequest& req, Colli
                                             const robot_state::RobotState& other_state1,
                                             const robot_state::RobotState& other_state2) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionRobotVoxel::checkOtherCollision(const CollisionRequest& req, CollisionResult& res,
@@ -220,7 +220,7 @@ void CollisionRobotVoxel::checkOtherCollision(const CollisionRequest& req, Colli
                                             const robot_state::RobotState& other_state2,
                                             const AllowedCollisionMatrix& acm) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionRobotVoxel::checkOtherCollisionHelper(const CollisionRequest& req, CollisionResult& res,
@@ -229,12 +229,12 @@ void CollisionRobotVoxel::checkOtherCollisionHelper(const CollisionRequest& req,
                                                   const robot_state::RobotState& other_state,
                                                   const AllowedCollisionMatrix* acm) const
 {
-  FCLManager manager;
+  VoxelManager manager;
   allocSelfCollisionBroadPhase(state, manager);
 
   const CollisionRobotVoxel& fcl_rob = dynamic_cast<const CollisionRobotVoxel&>(other_robot);
-  FCLObject other_fcl_obj;
-  fcl_rob.constructFCLObject(other_state, other_fcl_obj);
+  VoxelObject other_fcl_obj;
+  fcl_rob.constructVoxelObject(other_state, other_fcl_obj);
 
   CollisionData cd(&req, &res, acm);
   cd.enableGroup(getRobotModel());
@@ -264,25 +264,25 @@ void CollisionRobotVoxel::updatedPaddingOrScaling(const std::vector<std::string>
     {
       for (std::size_t j = 0; j < lmodel->getShapes().size(); ++j)
       {
-        FCLGeometryConstPtr g = createCollisionGeometry(lmodel->getShapes()[j], getLinkScale(lmodel->getName()),
+        VoxelGeometryConstPtr g = createCollisionGeometry(lmodel->getShapes()[j], getLinkScale(lmodel->getName()),
                                                         getLinkPadding(lmodel->getName()), lmodel, j);
         if (g)
         {
           index = lmodel->getFirstCollisionBodyTransformIndex() + j;
           geoms_[index] = g;
-          fcl_objs_[index] = FCLCollisionObjectConstPtr(new fcl::CollisionObjectd(g->collision_geometry_));
+          fcl_objs_[index] = VoxelCollisionObjectConstPtr(new fcl::CollisionObjectd(g->collision_geometry_));
         }
       }
     }
     else
-      ROS_ERROR_NAMED("collision_detection.fcl", "Updating padding or scaling for unknown link: '%s'", link.c_str());
+      ROS_ERROR_NAMED("collision_detection.voxel", "Updating padding or scaling for unknown link: '%s'", link.c_str());
   }
 }
 
 void CollisionRobotVoxel::distanceSelf(const DistanceRequest& req, DistanceResult& res,
                                      const robot_state::RobotState& state) const
 {
-  FCLManager manager;
+  VoxelManager manager;
   allocSelfCollisionBroadPhase(state, manager);
   DistanceData drd(&req, &res);
 
@@ -293,12 +293,12 @@ void CollisionRobotVoxel::distanceOther(const DistanceRequest& req, DistanceResu
                                       const robot_state::RobotState& state, const CollisionRobot& other_robot,
                                       const robot_state::RobotState& other_state) const
 {
-  FCLManager manager;
+  VoxelManager manager;
   allocSelfCollisionBroadPhase(state, manager);
 
   const CollisionRobotVoxel& fcl_rob = dynamic_cast<const CollisionRobotVoxel&>(other_robot);
-  FCLObject other_fcl_obj;
-  fcl_rob.constructFCLObject(other_state, other_fcl_obj);
+  VoxelObject other_fcl_obj;
+  fcl_rob.constructVoxelObject(other_state, other_fcl_obj);
 
   DistanceData drd(&req, &res);
   for (std::size_t i = 0; !drd.done && i < other_fcl_obj.collision_objects_.size(); ++i)

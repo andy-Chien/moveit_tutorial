@@ -40,7 +40,7 @@
 #include <moveit/collision_detection/world.h>
 #include <moveit/collision_detection/collision_world.h>
 #include <moveit/macros/class_forward.h>
-#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/voxel_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_collision_manager.h>
@@ -194,31 +194,31 @@ struct DistanceData
   bool done;
 };
 
-MOVEIT_STRUCT_FORWARD(FCLGeometry);
+MOVEIT_STRUCT_FORWARD(VoxelGeometry);
 
 /** \brief Bundles the \e CollisionGeometryData and FCL collision geometry representation into a single class. */
-struct FCLGeometry
+struct VoxelGeometry
 {
-  FCLGeometry()
+  VoxelGeometry()
   {
   }
 
   /** \brief Constructor for a robot link. */
-  FCLGeometry(fcl::CollisionGeometryd* collision_geometry, const robot_model::LinkModel* link, int shape_index)
+  VoxelGeometry(fcl::CollisionGeometryd* collision_geometry, const robot_model::LinkModel* link, int shape_index)
     : collision_geometry_(collision_geometry), collision_geometry_data_(new CollisionGeometryData(link, shape_index))
   {
     collision_geometry_->setUserData(collision_geometry_data_.get());
   }
 
   /** \brief Constructor for an attached body. */
-  FCLGeometry(fcl::CollisionGeometryd* collision_geometry, const robot_state::AttachedBody* ab, int shape_index)
+  VoxelGeometry(fcl::CollisionGeometryd* collision_geometry, const robot_state::AttachedBody* ab, int shape_index)
     : collision_geometry_(collision_geometry), collision_geometry_data_(new CollisionGeometryData(ab, shape_index))
   {
     collision_geometry_->setUserData(collision_geometry_data_.get());
   }
 
   /** \brief Constructor for a world object. */
-  FCLGeometry(fcl::CollisionGeometryd* collision_geometry, const World::Object* obj, int shape_index)
+  VoxelGeometry(fcl::CollisionGeometryd* collision_geometry, const World::Object* obj, int shape_index)
     : collision_geometry_(collision_geometry), collision_geometry_data_(new CollisionGeometryData(obj, shape_index))
   {
     collision_geometry_->setUserData(collision_geometry_data_.get());
@@ -243,31 +243,31 @@ struct FCLGeometry
   CollisionGeometryDataPtr collision_geometry_data_;
 };
 
-typedef std::shared_ptr<fcl::CollisionObjectd> FCLCollisionObjectPtr;
-typedef std::shared_ptr<const fcl::CollisionObjectd> FCLCollisionObjectConstPtr;
+typedef std::shared_ptr<fcl::CollisionObjectd> VoxelCollisionObjectPtr;
+typedef std::shared_ptr<const fcl::CollisionObjectd> VoxelCollisionObjectConstPtr;
 
 /** \brief A general high-level object which consists of multiple \e FCLCollisionObjects. It is the top level data
  *  structure which is used in the collision checking process. */
-struct FCLObject
+struct VoxelObject
 {
   void registerTo(fcl::BroadPhaseCollisionManagerd* manager);
   void unregisterFrom(fcl::BroadPhaseCollisionManagerd* manager);
   void clear();
 
-  std::vector<FCLCollisionObjectPtr> collision_objects_;
+  std::vector<VoxelCollisionObjectPtr> collision_objects_;
 
   /** \brief Geometry data corresponding to \e collision_objects_. */
-  std::vector<FCLGeometryConstPtr> collision_geometry_;
+  std::vector<VoxelGeometryConstPtr> collision_geometry_;
 };
 
-/** \brief Bundles an \e FCLObject and a broadphase FCL collision manager. */
-struct FCLManager
+/** \brief Bundles an \e VoxelObject and a broadphase FCL collision manager. */
+struct VoxelManager
 {
-  FCLObject object_;
+  VoxelObject object_;
   std::shared_ptr<fcl::BroadPhaseCollisionManagerd> manager_;
 };
 
-/** \brief Callback function used by the FCLManager used for each pair of collision objects to
+/** \brief Callback function used by the VoxelManager used for each pair of collision objects to
  *   calculate object contact information.
  *
  *   \param o1 First FCL collision object
@@ -276,7 +276,7 @@ struct FCLManager
  *   \return True terminates the collision check, false continues it to the next pair of objects */
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-/** \brief Callback function used by the FCLManager used for each pair of collision objects to
+/** \brief Callback function used by the VoxelManager used for each pair of collision objects to
  *   calculate collisions and distances.
  *
  *   \param o1 First FCL collision object
@@ -285,36 +285,36 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
  *   \return True terminates the distance check, false continues it to the next pair of objects */
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist);
 
-/** \brief Create new FCLGeometry object out of robot link model. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_model::LinkModel* link,
+/** \brief Create new VoxelGeometry object out of robot link model. */
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_model::LinkModel* link,
                                             int shape_index);
 
-/** \brief Create new FCLGeometry object out of attached body. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_state::AttachedBody* ab,
+/** \brief Create new VoxelGeometry object out of attached body. */
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_state::AttachedBody* ab,
                                             int shape_index);
 
-/** \brief Create new FCLGeometry object out of a world object.
+/** \brief Create new VoxelGeometry object out of a world object.
  *
  *  A world object always consists only of a single shape, therefore we don't need the \e shape_index. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const World::Object* obj);
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const World::Object* obj);
 
-/** \brief Create new scaled and / or padded FCLGeometry object out of robot link model. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
+/** \brief Create new scaled and / or padded VoxelGeometry object out of robot link model. */
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const robot_model::LinkModel* link, int shape_index);
 
-/** \brief Create new scaled and / or padded FCLGeometry object out of an attached body. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
+/** \brief Create new scaled and / or padded VoxelGeometry object out of an attached body. */
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const robot_state::AttachedBody* ab, int shape_index);
 
-/** \brief Create new scaled and / or padded FCLGeometry object out of an world object. */
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
+/** \brief Create new scaled and / or padded VoxelGeometry object out of an world object. */
+VoxelGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const World::Object* obj);
 
 /** \brief Increases the counter of the caches which can trigger the cleaning of expired entries from them. */
 void cleanCollisionGeometryCache();
 
 /** \brief Transforms an Eigen Isometry3d to FCL coordinate transformation */
-inline void transform2fcl(const Eigen::Isometry3d& b, fcl::Transform3d& f)
+inline void transform2voxel(const Eigen::Isometry3d& b, fcl::Transform3d& f)
 {
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
   f = b.matrix();
@@ -326,15 +326,15 @@ inline void transform2fcl(const Eigen::Isometry3d& b, fcl::Transform3d& f)
 }
 
 /** \brief Transforms an Eigen Isometry3d to FCL coordinate transformation */
-inline fcl::Transform3d transform2fcl(const Eigen::Isometry3d& b)
+inline fcl::Transform3d transform2voxel(const Eigen::Isometry3d& b)
 {
   fcl::Transform3d t;
-  transform2fcl(b, t);
+  transform2voxel(b, t);
   return t;
 }
 
 /** \brief Transforms an FCL contact into a MoveIt contact point. */
-inline void fcl2contact(const fcl::Contactd& fc, Contact& c)
+inline void voxel2contact(const fcl::Contactd& fc, Contact& c)
 {
   c.pos = Eigen::Vector3d(fc.pos[0], fc.pos[1], fc.pos[2]);
   c.normal = Eigen::Vector3d(fc.normal[0], fc.normal[1], fc.normal[2]);
@@ -348,7 +348,7 @@ inline void fcl2contact(const fcl::Contactd& fc, Contact& c)
 }
 
 /** \brief Transforms the FCL internal representation to the MoveIt \e CostSource data structure. */
-inline void fcl2costsource(const fcl::CostSourced& fcs, CostSource& cs)
+inline void voxel2costsource(const fcl::CostSourced& fcs, CostSource& cs)
 {
   cs.aabb_min[0] = fcs.aabb_min[0];
   cs.aabb_min[1] = fcs.aabb_min[1];

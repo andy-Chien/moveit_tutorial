@@ -38,18 +38,18 @@
 #define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_VOXEL_H_
 
 #include <moveit/collision_detection/collision_detector_allocator.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_world_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_world_voxel.h>
 
 namespace collision_detection
 {
-/** \brief An allocator for FCL collision detectors */
+/** \brief An allocator for Voxel collision detectors */
 class CollisionDetectorAllocatorVoxel
   : public CollisionDetectorAllocatorTemplate<CollisionWorldVoxel, CollisionRobotVoxel, CollisionDetectorAllocatorVoxel>
 {
 public:
   // const std::string& getName() const override;
-  static const std::string NAME;  // defined in collision_world_fcl.cpp
+  static const std::string NAME;  // defined in collision_world_voxel.cpp
   // static CollisionDetectorAllocatorPtr create()
   // {
   //   return CollisionDetectorAllocatorPtr(new CollisionDetectorAllocatorType());

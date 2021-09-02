@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_FCL_
-#define MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_FCL_
+#ifndef MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_VOXEL_
+#define MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_VOXEL_
 
 #include <cstdlib>
 #include <signal.h>
@@ -55,8 +55,8 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
 
-#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/voxel_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_collision_manager.h>
@@ -75,11 +75,6 @@ public:
   explicit CollisionWorldVoxel(const WorldPtr& world);
   CollisionWorldVoxel(const CollisionWorldVoxel& other, const WorldPtr& world);
   ~CollisionWorldVoxel() override;
-
-  void print_fuck()
-  {
-    std::cout << "FUCKKKKK~!!!!!!!!!!!" << std::endl;
-  };
 
   void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                            const robot_state::RobotState& state) const override;
@@ -108,11 +103,11 @@ protected:
   void checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                  const robot_state::RobotState& state, const AllowedCollisionMatrix* acm) const;
 
-  void constructFCLObject(const World::Object* obj, FCLObject& fcl_obj) const;
-  void updateFCLObject(const std::string& id);
+  void constructVoxelObject(const World::Object* obj, VoxelObject& fcl_obj) const;
+  void updateVoxelObject(const std::string& id);
 
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_;
-  std::map<std::string, FCLObject> fcl_objs_;
+  std::map<std::string, VoxelObject> fcl_objs_;
 
 private:
   void initialize();

@@ -82,9 +82,9 @@ public:
 
 protected:
   void updatedPaddingOrScaling(const std::vector<std::string>& links) override;
-  void constructFCLObject(const robot_state::RobotState& state, FCLObject& fcl_obj) const;
-  void allocSelfCollisionBroadPhase(const robot_state::RobotState& state, FCLManager& manager) const;
-  void getAttachedBodyObjects(const robot_state::AttachedBody* ab, std::vector<FCLGeometryConstPtr>& geoms) const;
+  void constructVoxelObject(const robot_state::RobotState& state, VoxelObject& fcl_obj) const;
+  void allocSelfCollisionBroadPhase(const robot_state::RobotState& state, VoxelManager& manager) const;
+  void getAttachedBodyObjects(const robot_state::AttachedBody* ab, std::vector<VoxelGeometryConstPtr>& geoms) const;
 
   void checkSelfCollisionHelper(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state,
                                 const AllowedCollisionMatrix* acm) const;
@@ -92,8 +92,8 @@ protected:
                                  const robot_state::RobotState& state, const CollisionRobot& other_robot,
                                  const robot_state::RobotState& other_state, const AllowedCollisionMatrix* acm) const;
 
-  std::vector<FCLGeometryConstPtr> geoms_;
-  std::vector<FCLCollisionObjectConstPtr> fcl_objs_;
+  std::vector<VoxelGeometryConstPtr> geoms_;
+  std::vector<VoxelCollisionObjectConstPtr> fcl_objs_;
 };
 }  // namespace collision_detection
 

@@ -46,9 +46,9 @@
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_detector_allocator_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_world_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_detector_allocator_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_world_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_voxel.h>
 #include <boost/scoped_ptr.hpp>
 
 int main(int argc, char** argv)

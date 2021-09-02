@@ -36,8 +36,8 @@
 
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
-#include <moveit/collision_detection_fcl/collision_world_fcl.h>
-#include <moveit/collision_detection_fcl/collision_robot_fcl.h>
+#include <moveit/collision_detection_voxel/collision_world_voxel.h>
+#include <moveit/collision_detection_voxel/collision_robot_voxel.h>
 #include <moveit/utils/robot_model_test_utils.h>
 
 #include <urdf_parser/urdf_parser.h>
@@ -52,7 +52,7 @@
 typedef collision_detection::CollisionWorldVoxel DefaultCWorldType;
 typedef collision_detection::CollisionRobotVoxel DefaultCRobotType;
 
-class FclCollisionDetectionTester : public testing::Test
+class VoxelCollisionDetectionTester : public testing::Test
 {
 protected:
   void SetUp() override
@@ -84,12 +84,12 @@ protected:
   std::string kinect_dae_resource_;
 };
 
-TEST_F(FclCollisionDetectionTester, InitOK)
+TEST_F(VoxelCollisionDetectionTester, InitOK)
 {
   ASSERT_TRUE(robot_model_ok_);
 }
 
-TEST_F(FclCollisionDetectionTester, DefaultNotInCollision)
+TEST_F(VoxelCollisionDetectionTester, DefaultNotInCollision)
 {
   robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
@@ -101,7 +101,7 @@ TEST_F(FclCollisionDetectionTester, DefaultNotInCollision)
   ASSERT_FALSE(res.collision);
 }
 
-TEST_F(FclCollisionDetectionTester, LinksInCollision)
+TEST_F(VoxelCollisionDetectionTester, LinksInCollision)
 {
   collision_detection::CollisionRequest req;
   collision_detection::CollisionResult res1;
@@ -143,7 +143,7 @@ TEST_F(FclCollisionDetectionTester, LinksInCollision)
   ASSERT_TRUE(res3.collision);
 }
 
-TEST_F(FclCollisionDetectionTester, ContactReporting)
+TEST_F(VoxelCollisionDetectionTester, ContactReporting)
 {
   collision_detection::CollisionRequest req;
   req.contacts = true;
@@ -197,7 +197,7 @@ TEST_F(FclCollisionDetectionTester, ContactReporting)
   EXPECT_LE(res.contact_count, 10u);
 }
 
-TEST_F(FclCollisionDetectionTester, ContactPositions)
+TEST_F(VoxelCollisionDetectionTester, ContactPositions)
 {
   collision_detection::CollisionRequest req;
   req.contacts = true;
@@ -266,7 +266,7 @@ TEST_F(FclCollisionDetectionTester, ContactPositions)
   ASSERT_FALSE(res3.collision);
 }
 
-TEST_F(FclCollisionDetectionTester, AttachedBodyTester)
+TEST_F(VoxelCollisionDetectionTester, AttachedBodyTester)
 {
   collision_detection::CollisionRequest req;
   collision_detection::CollisionResult res;
@@ -334,7 +334,7 @@ TEST_F(FclCollisionDetectionTester, AttachedBodyTester)
   ASSERT_TRUE(res.collision);
 }
 
-TEST_F(FclCollisionDetectionTester, DiffSceneTester)
+TEST_F(VoxelCollisionDetectionTester, DiffSceneTester)
 {
   robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
@@ -388,7 +388,7 @@ TEST_F(FclCollisionDetectionTester, DiffSceneTester)
   EXPECT_LT(fabs(first_check - second_check), .05);
 }
 
-TEST_F(FclCollisionDetectionTester, ConvertObjectToAttached)
+TEST_F(VoxelCollisionDetectionTester, ConvertObjectToAttached)
 {
   collision_detection::CollisionRequest req;
   collision_detection::CollisionResult res;
@@ -451,7 +451,7 @@ TEST_F(FclCollisionDetectionTester, ConvertObjectToAttached)
   EXPECT_LT(fabs(first_check - second_check), .1);
 }
 
-TEST_F(FclCollisionDetectionTester, TestCollisionMapAdditionSpeed)
+TEST_F(VoxelCollisionDetectionTester, TestCollisionMapAdditionSpeed)
 {
   EigenSTL::vector_Isometry3d poses;
   std::vector<shapes::ShapeConstPtr> shapes;
@@ -466,10 +466,10 @@ TEST_F(FclCollisionDetectionTester, TestCollisionMapAdditionSpeed)
   EXPECT_GE(1.0, t);
   // this is not really a failure; it is just that slow;
   // looking into doing collision checking with a voxel grid.
-  ROS_INFO_NAMED("collision_detection.fcl", "Adding boxes took %g", t);
+  ROS_INFO_NAMED("collision_detection.voxel", "Adding boxes took %g", t);
 }
 
-TEST_F(FclCollisionDetectionTester, MoveMesh)
+TEST_F(VoxelCollisionDetectionTester, MoveMesh)
 {
   robot_state::RobotState robot_state1(robot_model_);
   robot_state1.setToDefaultValues();
@@ -493,7 +493,7 @@ TEST_F(FclCollisionDetectionTester, MoveMesh)
   }
 }
 
-TEST_F(FclCollisionDetectionTester, TestChangingShapeSize)
+TEST_F(VoxelCollisionDetectionTester, TestChangingShapeSize)
 {
   robot_state::RobotState robot_state1(robot_model_);
   robot_state1.setToDefaultValues();

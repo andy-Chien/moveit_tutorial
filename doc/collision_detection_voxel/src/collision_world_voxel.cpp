@@ -34,9 +34,9 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit_tutorials/collision_detection_voxel/collision_world_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/collision_detector_allocator_fcl.h>
-#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_world_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_detector_allocator_voxel.h>
+#include <moveit_tutorials/collision_detection_voxel/voxel_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/geometry/geometric_shape_to_BVH_model.h>
@@ -120,7 +120,7 @@ void CollisionWorldVoxel::checkRobotCollision(const CollisionRequest& req, Colli
                                             const CollisionRobot& robot, const robot_state::RobotState& state1,
                                             const robot_state::RobotState& state2) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionWorldVoxel::checkRobotCollision(const CollisionRequest& req, CollisionResult& res,
@@ -128,7 +128,7 @@ void CollisionWorldVoxel::checkRobotCollision(const CollisionRequest& req, Colli
                                             const robot_state::RobotState& state2,
                                             const AllowedCollisionMatrix& acm) const
 {
-  ROS_ERROR_NAMED("collision_detection.fcl", "FCL continuous collision checking not yet implemented");
+  ROS_ERROR_NAMED("collision_detection.voxel", "Voxel continuous collision checking not yet implemented");
 }
 
 void CollisionWorldVoxel::checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res,
@@ -137,8 +137,8 @@ void CollisionWorldVoxel::checkRobotCollisionHelper(const CollisionRequest& req,
 {
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   const CollisionRobotVoxel& robot_fcl = dynamic_cast<const CollisionRobotVoxel&>(robot);
-  FCLObject fcl_obj;
-  robot_fcl.constructFCLObject(state, fcl_obj);
+  VoxelObject fcl_obj;
+  robot_fcl.constructVoxelObject(state, fcl_obj);
 
   CollisionData cd(&req, &res, acm);
   cd.enableGroup(robot.getRobotModel());
@@ -191,21 +191,21 @@ void CollisionWorldVoxel::checkWorldCollisionHelper(const CollisionRequest& req,
   }
 }
 
-void CollisionWorldVoxel::constructFCLObject(const World::Object* obj, FCLObject& fcl_obj) const
+void CollisionWorldVoxel::constructVoxelObject(const World::Object* obj, VoxelObject& fcl_obj) const
 {
   for (std::size_t i = 0; i < obj->shapes_.size(); ++i)
   {
-    FCLGeometryConstPtr g = createCollisionGeometry(obj->shapes_[i], obj);
+    VoxelGeometryConstPtr g = createCollisionGeometry(obj->shapes_[i], obj);
     if (g)
     {
-      auto co = new fcl::CollisionObjectd(g->collision_geometry_, transform2fcl(obj->shape_poses_[i]));
-      fcl_obj.collision_objects_.push_back(FCLCollisionObjectPtr(co));
+      auto co = new fcl::CollisionObjectd(g->collision_geometry_, transform2voxel(obj->shape_poses_[i]));
+      fcl_obj.collision_objects_.push_back(VoxelCollisionObjectPtr(co));
       fcl_obj.collision_geometry_.push_back(g);
     }
   }
 }
 
-void CollisionWorldVoxel::updateFCLObject(const std::string& id)
+void CollisionWorldVoxel::updateVoxelObject(const std::string& id)
 {
   // remove FCL objects that correspond to this object
   auto jt = fcl_objs_.find(id);
@@ -219,15 +219,15 @@ void CollisionWorldVoxel::updateFCLObject(const std::string& id)
   auto it = getWorld()->find(id);
   if (it != getWorld()->end())
   {
-    // construct FCL objects that correspond to this object
+    // construct Voxel objects that correspond to this object
     if (jt != fcl_objs_.end())
     {
-      constructFCLObject(it->second.get(), jt->second);
+      constructVoxelObject(it->second.get(), jt->second);
       jt->second.registerTo(manager_.get());
     }
     else
     {
-      constructFCLObject(it->second.get(), fcl_objs_[id]);
+      constructVoxelObject(it->second.get(), fcl_objs_[id]);
       fcl_objs_[id].registerTo(manager_.get());
     }
   }
@@ -277,7 +277,7 @@ void CollisionWorldVoxel::notifyObjectChange(const ObjectConstPtr& obj, World::A
   }
   else
   {
-    updateFCLObject(obj->id_);
+    updateVoxelObject(obj->id_);
     if (action & (World::DESTROY | World::REMOVE_SHAPE))
       cleanCollisionGeometryCache();
   }
@@ -287,8 +287,8 @@ void CollisionWorldVoxel::distanceRobot(const DistanceRequest& req, DistanceResu
                                       const robot_state::RobotState& state) const
 {
   const CollisionRobotVoxel& robot_fcl = dynamic_cast<const CollisionRobotVoxel&>(robot);
-  FCLObject fcl_obj;
-  robot_fcl.constructFCLObject(state, fcl_obj);
+  VoxelObject fcl_obj;
+  robot_fcl.constructVoxelObject(state, fcl_obj);
 
   DistanceData drd(&req, &res);
   for (std::size_t i = 0; !drd.done && i < fcl_obj.collision_objects_.size(); ++i)

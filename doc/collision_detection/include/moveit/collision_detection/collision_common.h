@@ -317,7 +317,7 @@ struct DistanceResultsData
   /** Normalized vector connecting closest points (from link_names[0] to link_names[1])
 
       Usually, when checking convex to convex, the normal is connecting closest points.
-      However, FCL in case of non-convex to non-convex or convex to non-convex returns
+      However, Voxel in case of non-convex to non-convex or convex to non-convex returns
       the contact normal for one of the two triangles that are in contact. */
   Eigen::Vector3d normal;
 
