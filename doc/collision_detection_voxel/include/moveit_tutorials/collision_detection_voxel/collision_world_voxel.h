@@ -103,11 +103,11 @@ protected:
   void checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                  const robot_state::RobotState& state, const AllowedCollisionMatrix* acm) const;
 
-  void constructVoxelObject(const World::Object* obj, VoxelObject& fcl_obj) const;
+  void constructVoxelObject(const World::Object* obj, VoxelObject& voxel_obj) const;
   void updateVoxelObject(const std::string& id);
 
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_;
-  std::map<std::string, VoxelObject> fcl_objs_;
+  std::map<std::string, VoxelObject> voxel_objs_;
 
 private:
   void initialize();

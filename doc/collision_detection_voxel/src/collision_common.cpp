@@ -496,7 +496,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     ROS_DEBUG_NAMED("collision_detection.voxel", "Actually checking collisions between %s and %s", cd1->getID().c_str(),
                     cd2->getID().c_str());
 
-  fcl::DistanceResultd fcl_result;
+  fcl::DistanceResultd voxel_result;
   DistanceResultsData dist_result;
   double dist_threshold = cdata->req->distance_threshold;
 
@@ -526,7 +526,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     }
   }
 
-  fcl_result.min_distance = dist_threshold;
+  voxel_result.min_distance = dist_threshold;
   // fcl::distance segfaults when given an octree with a null root pointer (using FCL 0.6.1)
   if ((o1->getObjectType() == fcl::OT_OCTREE &&
        !std::static_pointer_cast<const fcl::OcTreed>(o1->collisionGeometry())->getRoot()) ||
@@ -535,20 +535,20 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   {
     return false;
   }
-  double d = fcl::distance(o1, o2, fcl::DistanceRequestd(cdata->req->enable_nearest_points), fcl_result);
+  double d = fcl::distance(o1, o2, fcl::DistanceRequestd(cdata->req->enable_nearest_points), voxel_result);
 
   // Check if either object is already in the map. If not add it or if present
   // check to see if the new distance is closer. If closer remove the existing
   // one and add the new distance information.
   if (d < dist_threshold)
   {
-    dist_result.distance = fcl_result.min_distance;
+    dist_result.distance = voxel_result.min_distance;
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
-    dist_result.nearest_points[0] = fcl_result.nearest_points[0];
-    dist_result.nearest_points[1] = fcl_result.nearest_points[1];
+    dist_result.nearest_points[0] = voxel_result.nearest_points[0];
+    dist_result.nearest_points[1] = voxel_result.nearest_points[1];
 #else
-    dist_result.nearest_points[0] = Eigen::Vector3d(fcl_result.nearest_points[0].data.vs);
-    dist_result.nearest_points[1] = Eigen::Vector3d(fcl_result.nearest_points[1].data.vs);
+    dist_result.nearest_points[0] = Eigen::Vector3d(voxel_result.nearest_points[0].data.vs);
+    dist_result.nearest_points[1] = Eigen::Vector3d(voxel_result.nearest_points[1].data.vs);
 #endif
     dist_result.link_names[0] = cd1->getID();
     dist_result.link_names[1] = cd2->getID();

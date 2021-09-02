@@ -38,6 +38,7 @@
 #define MOVEIT_COLLISION_DETECTION_VOXEL_COLLISION_ROBOT_
 
 #include <moveit_tutorials/collision_detection_voxel/collision_common.h>
+#include <moveit_tutorials/collision_detection_voxel/voxel_compat.h>
 
 namespace collision_detection
 {
@@ -82,7 +83,7 @@ public:
 
 protected:
   void updatedPaddingOrScaling(const std::vector<std::string>& links) override;
-  void constructVoxelObject(const robot_state::RobotState& state, VoxelObject& fcl_obj) const;
+  void constructVoxelObject(const robot_state::RobotState& state, VoxelObject& voxel_obj) const;
   void allocSelfCollisionBroadPhase(const robot_state::RobotState& state, VoxelManager& manager) const;
   void getAttachedBodyObjects(const robot_state::AttachedBody* ab, std::vector<VoxelGeometryConstPtr>& geoms) const;
 
@@ -93,7 +94,7 @@ protected:
                                  const robot_state::RobotState& other_state, const AllowedCollisionMatrix* acm) const;
 
   std::vector<VoxelGeometryConstPtr> geoms_;
-  std::vector<VoxelCollisionObjectConstPtr> fcl_objs_;
+  std::vector<VoxelCollisionObjectConstPtr> voxel_objs_;
 };
 }  // namespace collision_detection
 

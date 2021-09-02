@@ -89,9 +89,9 @@ CollisionWorldVoxel::CollisionWorldVoxel(const CollisionWorldVoxel& other, const
   // m->tree_init_level = 2;
   manager_.reset(m);
 
-  fcl_objs_ = other.fcl_objs_;
-  for (auto& fcl_obj : fcl_objs_)
-    fcl_obj.second.registerTo(manager_.get());
+  voxel_objs_ = other.voxel_objs_;
+  for (auto& voxel_obj : voxel_objs_)
+    voxel_obj.second.registerTo(manager_.get());
   // manager_->update();
 
   // request notifications about changes to new world
@@ -136,14 +136,14 @@ void CollisionWorldVoxel::checkRobotCollisionHelper(const CollisionRequest& req,
                                                   const AllowedCollisionMatrix* acm) const
 {
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-  const CollisionRobotVoxel& robot_fcl = dynamic_cast<const CollisionRobotVoxel&>(robot);
-  VoxelObject fcl_obj;
-  robot_fcl.constructVoxelObject(state, fcl_obj);
+  const CollisionRobotVoxel& robot_voxel = dynamic_cast<const CollisionRobotVoxel&>(robot);
+  VoxelObject voxel_obj;
+  robot_voxel.constructVoxelObject(state, voxel_obj);
 
   CollisionData cd(&req, &res, acm);
   cd.enableGroup(robot.getRobotModel());
-  for (std::size_t i = 0; !cd.done_ && i < fcl_obj.collision_objects_.size(); ++i)
-    manager_->collide(fcl_obj.collision_objects_[i].get(), &cd, &collisionCallback);
+  for (std::size_t i = 0; !cd.done_ && i < voxel_obj.collision_objects_.size(); ++i)
+    manager_->collide(voxel_obj.collision_objects_[i].get(), &cd, &collisionCallback);
 
   if (req.distance)
   {
@@ -175,9 +175,9 @@ void CollisionWorldVoxel::checkWorldCollisionHelper(const CollisionRequest& req,
                                                   const AllowedCollisionMatrix* acm) const
 {
   std::cout << "===================================================================================" << std::endl;
-  const CollisionWorldVoxel& other_fcl_world = dynamic_cast<const CollisionWorldVoxel&>(other_world);
+  const CollisionWorldVoxel& other_voxel_world = dynamic_cast<const CollisionWorldVoxel&>(other_world);
   CollisionData cd(&req, &res, acm);
-  manager_->collide(other_fcl_world.manager_.get(), &cd, &collisionCallback);
+  manager_->collide(other_voxel_world.manager_.get(), &cd, &collisionCallback);
 
   if (req.distance)
   {
@@ -191,7 +191,7 @@ void CollisionWorldVoxel::checkWorldCollisionHelper(const CollisionRequest& req,
   }
 }
 
-void CollisionWorldVoxel::constructVoxelObject(const World::Object* obj, VoxelObject& fcl_obj) const
+void CollisionWorldVoxel::constructVoxelObject(const World::Object* obj, VoxelObject& voxel_obj) const
 {
   for (std::size_t i = 0; i < obj->shapes_.size(); ++i)
   {
@@ -199,8 +199,8 @@ void CollisionWorldVoxel::constructVoxelObject(const World::Object* obj, VoxelOb
     if (g)
     {
       auto co = new fcl::CollisionObjectd(g->collision_geometry_, transform2voxel(obj->shape_poses_[i]));
-      fcl_obj.collision_objects_.push_back(VoxelCollisionObjectPtr(co));
-      fcl_obj.collision_geometry_.push_back(g);
+      voxel_obj.collision_objects_.push_back(VoxelCollisionObjectPtr(co));
+      voxel_obj.collision_geometry_.push_back(g);
     }
   }
 }
@@ -208,8 +208,8 @@ void CollisionWorldVoxel::constructVoxelObject(const World::Object* obj, VoxelOb
 void CollisionWorldVoxel::updateVoxelObject(const std::string& id)
 {
   // remove FCL objects that correspond to this object
-  auto jt = fcl_objs_.find(id);
-  if (jt != fcl_objs_.end())
+  auto jt = voxel_objs_.find(id);
+  if (jt != voxel_objs_.end())
   {
     jt->second.unregisterFrom(manager_.get());
     jt->second.clear();
@@ -220,21 +220,21 @@ void CollisionWorldVoxel::updateVoxelObject(const std::string& id)
   if (it != getWorld()->end())
   {
     // construct Voxel objects that correspond to this object
-    if (jt != fcl_objs_.end())
+    if (jt != voxel_objs_.end())
     {
       constructVoxelObject(it->second.get(), jt->second);
       jt->second.registerTo(manager_.get());
     }
     else
     {
-      constructVoxelObject(it->second.get(), fcl_objs_[id]);
-      fcl_objs_[id].registerTo(manager_.get());
+      constructVoxelObject(it->second.get(), voxel_objs_[id]);
+      voxel_objs_[id].registerTo(manager_.get());
     }
   }
   else
   {
-    if (jt != fcl_objs_.end())
-      fcl_objs_.erase(jt);
+    if (jt != voxel_objs_.end())
+      voxel_objs_.erase(jt);
   }
 
   // manager_->update();
@@ -250,7 +250,7 @@ void CollisionWorldVoxel::setWorld(const WorldPtr& world)
 
   // clear out objects from old world
   manager_->clear();
-  fcl_objs_.clear();
+  voxel_objs_.clear();
   cleanCollisionGeometryCache();
 
   CollisionWorld::setWorld(world);
@@ -266,12 +266,12 @@ void CollisionWorldVoxel::notifyObjectChange(const ObjectConstPtr& obj, World::A
 {
   if (action == World::DESTROY)
   {
-    auto it = fcl_objs_.find(obj->id_);
-    if (it != fcl_objs_.end())
+    auto it = voxel_objs_.find(obj->id_);
+    if (it != voxel_objs_.end())
     {
       it->second.unregisterFrom(manager_.get());
       it->second.clear();
-      fcl_objs_.erase(it);
+      voxel_objs_.erase(it);
     }
     cleanCollisionGeometryCache();
   }
@@ -286,20 +286,20 @@ void CollisionWorldVoxel::notifyObjectChange(const ObjectConstPtr& obj, World::A
 void CollisionWorldVoxel::distanceRobot(const DistanceRequest& req, DistanceResult& res, const CollisionRobot& robot,
                                       const robot_state::RobotState& state) const
 {
-  const CollisionRobotVoxel& robot_fcl = dynamic_cast<const CollisionRobotVoxel&>(robot);
-  VoxelObject fcl_obj;
-  robot_fcl.constructVoxelObject(state, fcl_obj);
+  const CollisionRobotVoxel& robot_voxel = dynamic_cast<const CollisionRobotVoxel&>(robot);
+  VoxelObject voxel_obj;
+  robot_voxel.constructVoxelObject(state, voxel_obj);
 
   DistanceData drd(&req, &res);
-  for (std::size_t i = 0; !drd.done && i < fcl_obj.collision_objects_.size(); ++i)
-    manager_->distance(fcl_obj.collision_objects_[i].get(), &drd, &distanceCallback);
+  for (std::size_t i = 0; !drd.done && i < voxel_obj.collision_objects_.size(); ++i)
+    manager_->distance(voxel_obj.collision_objects_[i].get(), &drd, &distanceCallback);
 }
 
 void CollisionWorldVoxel::distanceWorld(const DistanceRequest& req, DistanceResult& res, const CollisionWorld& world) const
 {
-  const CollisionWorldVoxel& other_fcl_world = dynamic_cast<const CollisionWorldVoxel&>(world);
+  const CollisionWorldVoxel& other_voxel_world = dynamic_cast<const CollisionWorldVoxel&>(world);
   DistanceData drd(&req, &res);
-  manager_->distance(other_fcl_world.manager_.get(), &drd, &distanceCallback);
+  manager_->distance(other_voxel_world.manager_.get(), &drd, &distanceCallback);
 }
 
 }  // end of namespace collision_detection

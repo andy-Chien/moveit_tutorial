@@ -96,6 +96,6 @@ class OBBRSS;
 using OBBRSSd = fcl::OBBRSS;
 class DynamicAABBTreeCollisionManager;
 using DynamicAABBTreeCollisionManagerd = fcl::DynamicAABBTreeCollisionManager;
-}  // namespace fcl
+}  // namespace voxel
 #endif
 #endif
