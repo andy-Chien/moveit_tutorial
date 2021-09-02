@@ -84,34 +84,46 @@ int main(int argc, char** argv)
   // collision_detection::CollisionDetectorAllocatorPtr aa = collision_detection::CollisionDetectorAllocatorVoxel::create();
   // std::cout << aa->getName() << std::endl;
   // planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create());
+  std::cout<<"1.-----------------"<<std::endl;
   planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
+  std::cout<<"2.-----------------"<<std::endl;
 
   collision_detection::CollisionResult t_res;
   collision_detection::CollisionRequest t_req;
   t_req.contacts = true;
+  std::cout<<"3.-----------------"<<std::endl;
   robot_state::RobotState& t_state = planning_scene->getCurrentStateNonConst();
+  std::cout<<"4.-----------------"<<std::endl;
   planning_scene->checkCollision(t_req, t_res);
+  std::cout<<"5.-----------------"<<std::endl;
   // planning_scene->getCollisionWorld()->checkRobotCollision(t_req, t_res, planning_scene->getCollisionRobot(), t_state);
   // planning_scene->getCollisionWorld()->print_fuck();
   planning_scene_monitor::PlanningSceneMonitorPtr psm(
       new planning_scene_monitor::PlanningSceneMonitor(planning_scene, robot_model_loader));
+  std::cout<<"6.-----------------"<<std::endl;
 
   /* listen for planning scene messages on topic /XXX and apply them to
                        the internal planning scene accordingly */
   std::string scene_topic = "/move_group/monitored_planning_scene";
+  std::cout<<"7.-----------------"<<std::endl;
+
   psm->startSceneMonitor(scene_topic);
   /* listens to changes of world geometry, collision objects, and (optionally) octomaps */
+  std::cout<<"8.-----------------"<<std::endl;
   psm->startWorldGeometryMonitor();
   /* listen to joint state updates as well as changes in attached collision objects
                         and update the internal planning scene accordingly*/
+  std::cout<<"9.-----------------"<<std::endl;
   psm->startStateMonitor();
-  
+  std::cout<<"10.-----------------"<<std::endl;
   // robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
   /* Create a RobotState and JointModelGroup to keep track of the current robot pose and planning group*/
   // robot_state::RobotStatePtr robot_state(new robot_state::RobotState(robot_model));new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState())
   robot_state::RobotStatePtr robot_state(new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState()));
+  std::cout<<"11.-----------------"<<std::endl;
 
   const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
+  std::cout<<"12.-----------------"<<std::endl;
   // planning_scene_monitor::LockedPlanningSceneRO(psm)->addCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create());
   // planning_scene_monitor::LockedPlanningSceneRO(psm)->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
 
@@ -131,13 +143,16 @@ int main(int argc, char** argv)
     std::cout<<"Scene updated"<<std::endl;
   else
     std::cout<<"Scene not updated"<<std::endl;
+  std::cout<<"13.-----------------"<<std::endl;
   // psm->updatesScene(planning_scene);
   planning_scene_monitor::LockedPlanningSceneRO(psm)->getAllowedCollisionMatrix().print(std::cout);
+  std::cout<<"14.-----------------"<<std::endl;
   // We will now construct a loader to load a planner, by name.
   // Note that we are using the ROS pluginlib library here.
   boost::scoped_ptr<pluginlib::ClassLoader<planning_interface::PlannerManager>> planner_plugin_loader;
   planning_interface::PlannerManagerPtr planner_instance;
   std::string planner_plugin_name;
+  std::cout<<"13.-----------------"<<std::endl;
 
   // We will get the name of planning plugin we want to load
   // from the ROS parameter server, and then load the planner
@@ -153,6 +168,7 @@ int main(int argc, char** argv)
   {
     ROS_FATAL_STREAM("Exception while creating planning plugin loader " << ex.what());
   }
+  std::cout<<"14.-----------------"<<std::endl;
   try
   {
     planner_instance.reset(planner_plugin_loader->createUnmanagedInstance(planner_plugin_name));
@@ -169,6 +185,7 @@ int main(int argc, char** argv)
     ROS_ERROR_STREAM("Exception while loading planner '" << planner_plugin_name << "': " << ex.what() << std::endl
                                                          << "Available plugins: " << ss.str());
   }
+  std::cout<<"15.-----------------"<<std::endl;
 
   // Visualization
   // ^^^^^^^^^^^^^
@@ -195,7 +212,7 @@ int main(int argc, char** argv)
 
   /* We can also use visual_tools to wait for user input */
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-
+  std::cout<<"16.-----------------"<<std::endl;
   collision_detection::CollisionRequest col_req;
   collision_detection::CollisionResult col_res;
   col_req.contacts = true;
@@ -204,13 +221,14 @@ int main(int argc, char** argv)
   ros::Time end = ros::Time::now();
   std::cout<<"================================== collision check spend "<<(end - begin).toSec()<<" sec."<<std::endl;
   std::cout<<col_res.collision<<std::endl;
-
+  std::cout<<"17.-----------------"<<std::endl;
   // planning_scene = psm->getPlanningScene();
   if (psm->updatesScene(planning_scene_monitor::LockedPlanningSceneRO(psm)))
     std::cout<<"Scene updated"<<std::endl;
   else
     std::cout<<"Scene not updated"<<std::endl;
   planning_scene_monitor::LockedPlanningSceneRO(psm)->getAllowedCollisionMatrix().print(std::cout);
+  std::cout<<"18.-----------------"<<std::endl;
 
   // Pose Goal
   // ^^^^^^^^^
@@ -241,6 +259,7 @@ int main(int argc, char** argv)
   //     http://docs.ros.org/melodic/api/moveit_core/html/namespacekinematic__constraints.html#a88becba14be9ced36fefc7980271e132
   moveit_msgs::Constraints pose_goal =
       kinematic_constraints::constructGoalConstraints("panda_link8", pose, tolerance_pose, tolerance_angle);
+  std::cout<<"19.-----------------"<<std::endl;
 
   req.group_name = PLANNING_GROUP;
   req.goal_constraints.push_back(pose_goal);
@@ -251,20 +270,27 @@ int main(int argc, char** argv)
   planning_interface::PlanningContextPtr context;
   {
   planning_scene_monitor::LockedPlanningSceneRO planning_scene(psm);
+  std::cout<<"20.-----------------"<<std::endl;
   context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
+  std::cout<<"21.-----------------"<<std::endl;
   context->solve(res);
+  std::cout<<"22.-----------------"<<std::endl;
+
   }
   if (res.error_code_.val != res.error_code_.SUCCESS)
   {
     ROS_ERROR("Could not compute plan successfully");
     return 0;
   }
+  std::cout<<"23.-----------------"<<std::endl;
+
 
   // Visualize the result
   // ^^^^^^^^^^^^^^^^^^^^
   ros::Publisher display_publisher =
       node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
   moveit_msgs::DisplayTrajectory display_trajectory;
+  std::cout<<"24.-----------------"<<std::endl;
 
   /* Visualize the trajectory */
   moveit_msgs::MotionPlanResponse response;

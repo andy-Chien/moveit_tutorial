@@ -63,6 +63,7 @@ const std::string CollisionDetectorAllocatorVoxel::NAME("FUCK");
 
 CollisionWorldVoxel::CollisionWorldVoxel() : CollisionWorld()
 {
+  voxelInit();
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -73,10 +74,10 @@ CollisionWorldVoxel::CollisionWorldVoxel() : CollisionWorld()
 
 CollisionWorldVoxel::CollisionWorldVoxel(const WorldPtr& world) : CollisionWorld(world)
 {
+  voxelInit();
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
-
   // request notifications about changes to new world
   observer_handle_ = getWorld()->addObserver(boost::bind(&CollisionWorldVoxel::notifyObjectChange, this, _1, _2));
   getWorld()->notifyObserverAllObjects(observer_handle_, World::CREATE);
@@ -85,6 +86,7 @@ CollisionWorldVoxel::CollisionWorldVoxel(const WorldPtr& world) : CollisionWorld
 CollisionWorldVoxel::CollisionWorldVoxel(const CollisionWorldVoxel& other, const WorldPtr& world)
   : CollisionWorld(other, world)
 {
+  voxelInit();
   auto m = new fcl::DynamicAABBTreeCollisionManagerd();
   // m->tree_init_level = 2;
   manager_.reset(m);
@@ -139,7 +141,12 @@ void CollisionWorldVoxel::checkRobotCollisionHelper(const CollisionRequest& req,
   const CollisionRobotVoxel& robot_voxel = dynamic_cast<const CollisionRobotVoxel&>(robot);
   VoxelObject voxel_obj;
   robot_voxel.constructVoxelObject(state, voxel_obj);
-
+  BitVectorVoxel coll_bits = bits_in_collision;
+  size_t num_colls;
+  num_colls = gvl->getMap("myHandVoxellist")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("myHandVoxellist_2")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  num_colls += gvl->getMap("myHandVoxellist")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("countingVoxelList")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  num_colls += gvl->getMap("myHandVoxellist_2")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("countingVoxelList")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  std::cout << "Detected " << num_colls << " collisions" << std::endl;
   CollisionData cd(&req, &res, acm);
   cd.enableGroup(robot.getRobotModel());
   for (std::size_t i = 0; !cd.done_ && i < voxel_obj.collision_objects_.size(); ++i)
@@ -178,7 +185,12 @@ void CollisionWorldVoxel::checkWorldCollisionHelper(const CollisionRequest& req,
   const CollisionWorldVoxel& other_voxel_world = dynamic_cast<const CollisionWorldVoxel&>(other_world);
   CollisionData cd(&req, &res, acm);
   manager_->collide(other_voxel_world.manager_.get(), &cd, &collisionCallback);
-
+  BitVectorVoxel coll_bits = bits_in_collision;
+  size_t num_colls;
+  num_colls = gvl->getMap("myHandVoxellist")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("myHandVoxellist_2")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  num_colls += gvl->getMap("myHandVoxellist")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("countingVoxelList")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  num_colls += gvl->getMap("myHandVoxellist_2")->as<voxelmap::BitVectorVoxelMap>()->collideWithTypes(gvl->getMap("countingVoxelList")->as<voxelmap::BitVectorVoxelMap>(), coll_bits);
+  std::cout << "Detected " << num_colls << " collisions" << std::endl;
   if (req.distance)
   {
     DistanceRequest dreq;
@@ -302,4 +314,173 @@ void CollisionWorldVoxel::distanceWorld(const DistanceRequest& req, DistanceResu
   manager_->distance(other_voxel_world.manager_.get(), &drd, &distanceCallback);
 }
 
+void CollisionWorldVoxel::voxelInit()
+{
+  std::cout<<"yoyoyoyoyoyoyoyoyoyoyoyoyoyoyoyoyoy"<<std::endl;
+  Vector3ui map_dim(256, 256, 256);
+  map_dimensions =  map_dim;
+  voxel_side_length = 0.01f; // 1 cm voxel size
+
+  icl_core::logging::initialize();
+  /*
+   * First, we generate an API class, which defines the
+   * volume of our space and the resolution.
+   * Be careful here! The size is limited by the memory
+   * of your GPU. Even if an empty Octree is small, a
+   * Voxelmap will always require the full memory.
+   */
+
+  icl_core::config::GetoptParameter points_parameter("points-topic:", "t",
+                                                    "Identifer of the pointcloud topic");
+  icl_core::config::GetoptParameter roll_parameter  ("roll:", "r",
+                                                    "Camera roll in degrees");
+  icl_core::config::GetoptParameter pitch_parameter ("pitch:", "p",
+                                                    "Camera pitch in degrees");
+  icl_core::config::GetoptParameter yaw_parameter   ("yaw:", "y",
+                                                    "Camera yaw in degrees");
+  icl_core::config::GetoptParameter voxel_side_length_parameter("voxel_side_length:", "s",
+                                                                "Side length of a voxel, default 0.01");
+  icl_core::config::GetoptParameter filter_threshold_parameter ("filter_threshold:", "f",
+                                                                "Density filter threshold per voxel, default 1");
+  icl_core::config::GetoptParameter erode_threshold_parameter  ("erode_threshold:", "e",
+                                                                "Erode voxels with fewer occupied neighbors (percentage)");
+  icl_core::config::addParameter(points_parameter);
+  icl_core::config::addParameter(roll_parameter);
+  icl_core::config::addParameter(pitch_parameter);
+  icl_core::config::addParameter(yaw_parameter);
+  icl_core::config::addParameter(voxel_side_length_parameter);
+  icl_core::config::addParameter(filter_threshold_parameter);
+  icl_core::config::addParameter(erode_threshold_parameter);
+  icl_core::logging::initialize();
+
+  voxel_side_length = icl_core::config::paramOptDefault<float>("voxel_side_length", 0.01f);
+
+  // setup "tf" to transform from camera to world / gpu-voxels coordinates
+
+  //const Vector3f camera_offsets(2, 0, 1); // camera located at y=0, x_max/2, z_max/2
+  // const Vector3f camera_offsets(map_dimensions.x * voxel_side_length * 0.5f, -0.2f, map_dimensions.z * voxel_side_length * 0.5f); // camera located at y=-0.2m, x_max/2, z_max/2
+  const Vector3f camera_offsets(-0.3, 0.7, 0.5);
+  float roll = icl_core::config::paramOptDefault<float>("roll", 0.0f) * 3.141592f / 180.0f;
+  float pitch = icl_core::config::paramOptDefault<float>("pitch", 90.0f) * 3.141592f / 180.0f;
+  float yaw = icl_core::config::paramOptDefault<float>("yaw", 0.0f) * 3.141592f / 180.0f;
+  tf = Matrix4f::createFromRotationAndTranslation(Matrix3f::createFromRPY(roll, pitch, yaw), camera_offsets);
+
+  std::string point_cloud_topic = icl_core::config::paramOptDefault<std::string>("points-topic", "/camera/depth/color/points");
+  LOGGING_INFO(Gpu_voxels, "DistanceROSDemo start. Point-cloud topic: " << point_cloud_topic << endl);
+
+  gvl = GpuVoxels::getInstance();
+  gvl->initialize(map_dimensions.x, map_dimensions.y, map_dimensions.z, voxel_side_length); // ==> 200 Voxels, each one is 1 cm in size so the map represents 20x20x20 centimeter
+
+  //Vis Helper
+  gvl->addPrimitives(primitive_array::ePRIM_SPHERE, "measurementPoints");
+
+  // Add a map:
+  gvl->addMap(MT_PROBAB_VOXELMAP, "myObjectVoxelmap");
+  gvl->addMap(MT_BITVECTOR_VOXELLIST, "myHandVoxellist");
+  gvl->addMap(MT_BITVECTOR_VOXELLIST, "myHandVoxellist_2");
+
+  gvl->addMap(MT_DISTANCE_VOXELMAP, "pbaDistanceVoxmap");
+  shared_ptr<DistanceVoxelMap> pbaDistanceVoxmap = dynamic_pointer_cast<DistanceVoxelMap>(gvl->getMap("pbaDistanceVoxmap"));
+
+  gvl->addMap(MT_PROBAB_VOXELMAP, "erodeTempVoxmap1");
+  shared_ptr<ProbVoxelMap> erodeTempVoxmap1 = dynamic_pointer_cast<ProbVoxelMap>(gvl->getMap("erodeTempVoxmap1"));
+  gvl->addMap(MT_PROBAB_VOXELMAP, "erodeTempVoxmap2");
+  shared_ptr<ProbVoxelMap> erodeTempVoxmap2 = dynamic_pointer_cast<ProbVoxelMap>(gvl->getMap("erodeTempVoxmap2"));
+
+  gvl->addMap(MT_COUNTING_VOXELLIST, "countingVoxelList");
+  shared_ptr<CountingVoxelList> countingVoxelList = dynamic_pointer_cast<CountingVoxelList>(gvl->getMap("countingVoxelList"));
+
+  gvl->addMap(MT_COUNTING_VOXELLIST, "countingVoxelListFiltered");
+  shared_ptr<CountingVoxelList> countingVoxelListFiltered = dynamic_pointer_cast<CountingVoxelList>(gvl->getMap("countingVoxelListFiltered"));
+
+  //PBA map clone for visualization without artifacts
+  gvl->addMap(MT_DISTANCE_VOXELMAP, "pbaDistanceVoxmapVisual");
+  shared_ptr<DistanceVoxelMap> pbaDistanceVoxmapVisual = dynamic_pointer_cast<DistanceVoxelMap>(gvl->getMap("pbaDistanceVoxmapVisual"));
+  pbaDistanceVoxmapVisual->clearMap();
+
+  // And a robot, generated from a ROS URDF file:
+  gvl->addRobot("myUrdfRobot", "ur5_50/ur5.urdf", true);
+  gvl->addRobot("myUrdfRobot2", "ur5_50/ur5_2.urdf", true);
+  std::cout<<"sub  1 gogogogogog"<<std::endl;
+  ros::Subscriber sub1 = n.subscribe("joint_statesssssssssssssssssssssssssssssssssssssssss", 1, &CollisionWorldVoxel::jointStateCallback, this);
+  // ros::Subscriber sub2 = n.subscribe("obstacle_pose", 1, obstaclePoseCallback);
+  // ros::Subscriber sub = n.subscribe<pcl::PointCloud<pcl::PointXYZ> >(point_cloud_topic, 1, &CollisionWorldVoxel::pointCloudCallback, this);
+  std::cout<<"sub  2 gogogogogog"<<std::endl;
+  ros::Subscriber sub = n.subscribe<pcl::PointCloud<pcl::PointXYZ> >("cccccccccccccccccccccccccccccccccccccccccccccccccccc", 1, &CollisionWorldVoxel::pointCloudCallback, this);
+  std::cout<<" gogogogogog"<<std::endl;
+  // ros::NodeHandle n;&BaseModule::vectorMoveMsgCallback
+  // ros::Subscriber sub1 = n.subscribe("joint_states", 1, jointStateCallback);
+  // ros::Subscriber sub2 = n.subscribe("obstacle_pose", 1, obstaclePoseCallback);
+  // ros::Subscriber sub = n.subscribe<pcl::Poiicl_coree ROS callback
+  // gvl->insertPointCloudFromFile("myObjectVoxelmap", "hollie/hals_vereinfacht.binvox", true,
+  //                               eBVM_OCCUPIED, false, object_position, 0.3);
+  // update the robot joints:
+  // gvl->setRobotConfiguration("myUrdfRobot", myRobotJointValues);
+  // insert the robot into the map:
+  // gvl->insertRobotIntoMap("myUrdfRobot", "myHandVoxellist", eBVM_OCCUPIED);
+  // update the robot joints:
+  // gvl->setRobotConfiguration("myUrdfRobot2", myRobotJointValues);
+  // insert the robot into the map:
+  // gvl->insertRobotIntoMap("myUrdfRobot2", "myHandVoxellist_2", eBVM_OCCUPIED);
+  /*
+   * Now we start the main loop, that will read ROS messages and update the Robot.
+   */
+  // Define two measurement points:
+  // std::vector<Vector3i> measurement_points;
+  // measurement_points.push_back(Vector3i(40, 100, 50));
+  // measurement_points.push_back(Vector3i(160, 100, 50));
+  // gvl->modifyPrimitives("measurementPoints", measurement_points, 5);
+
+  int filter_threshold = icl_core::config::paramOptDefault<int>("filter_threshold", 0);
+  std::cout << "Remove voxels containing less points than: " << filter_threshold << std::endl;
+
+  float erode_threshold = icl_core::config::paramOptDefault<float>("erode_threshold", 0.0f);
+  std::cout << "Erode voxels with neighborhood occupancy ratio less or equal to: " << erode_threshold << std::endl;
+  iteration = 0;
+  new_data_received = false; // call visualize on the first iteration
+
 }  // end of namespace collision_detection
+
+void CollisionWorldVoxel::pointCloudCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& msg)
+{
+  std::vector<Vector3f> point_data;
+  point_data.resize(msg->points.size());
+
+  for (uint32_t i = 0; i < msg->points.size(); i++)
+  {
+    point_data[i].x = msg->points[i].x;
+    point_data[i].y = msg->points[i].y;
+    point_data[i].z = msg->points[i].z;
+  }
+
+  //my_point_cloud.add(point_data);
+  my_point_cloud.update(point_data);
+
+  // transform new pointcloud to world coordinates
+  my_point_cloud.transformSelf(&tf);
+  
+  new_data_received = true;
+
+  LOGGING_INFO(Gpu_voxels, "DistanceROSDemo camera callback. PointCloud size: " << msg->points.size() << endl);
+}
+
+void CollisionWorldVoxel::jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
+{
+  // std::cout << "Got JointStateMessage" << std::endl;
+  gvl->clearMap("myHandVoxellist");
+  gvl->clearMap("myHandVoxellist_2");
+
+  for(size_t i = 0; i < msg->name.size(); i++)
+  {
+    myRobotJointValues[msg->name[i]] = msg->position[i];
+  }
+  // update the robot joints:
+  gvl->setRobotConfiguration("myUrdfRobot", myRobotJointValues);
+  // insert the robot into the map:
+  gvl->insertRobotIntoMap("myUrdfRobot", "myHandVoxellist", eBVM_OCCUPIED);
+  // update the robot joints:
+  gvl->setRobotConfiguration("myUrdfRobot2", myRobotJointValues);
+  // insert the robot into the map:
+  gvl->insertRobotIntoMap("myUrdfRobot2", "myHandVoxellist_2", eBVM_OCCUPIED);
+}
+};

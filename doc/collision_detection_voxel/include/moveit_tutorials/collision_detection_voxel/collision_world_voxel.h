@@ -64,7 +64,13 @@
 #include <fcl/broadphase/broadphase.h>
 #endif
 
-#include <memory>
+using namespace gpu_voxels;
+using boost::dynamic_pointer_cast;
+using boost::shared_ptr;
+using gpu_voxels::voxelmap::ProbVoxelMap;
+using gpu_voxels::voxelmap::DistanceVoxelMap;
+using gpu_voxels::voxellist::CountingVoxelList;
+namespace bfs = boost::filesystem;
 
 namespace collision_detection
 {
@@ -97,6 +103,10 @@ public:
 
   void setWorld(const WorldPtr& world) override;
 
+  void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
+  void pointCloudCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& msg);
+  void voxelInit();
+
 protected:
   void checkWorldCollisionHelper(const CollisionRequest& req, CollisionResult& res, const CollisionWorld& other_world,
                                  const AllowedCollisionMatrix* acm) const;
@@ -110,6 +120,21 @@ protected:
   std::map<std::string, VoxelObject> voxel_objs_;
 
 private:
+  ros::NodeHandle n;
+  shared_ptr<GpuVoxels> gvl;
+
+  Vector3ui map_dimensions;
+  float voxel_side_length; // 1 cm voxel size
+
+  bool new_data_received;
+  PointCloud my_point_cloud;
+  Matrix4f tf;
+  BitVectorVoxel bits_in_collision;
+
+  size_t iteration;
+
+  robot::JointValueMap myRobotJointValues;
+
   void initialize();
   void notifyObjectChange(const ObjectConstPtr& obj, World::Action action);
   World::ObserverHandle observer_handle_;
