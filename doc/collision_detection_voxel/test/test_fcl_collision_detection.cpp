@@ -49,8 +49,8 @@
 #include <ctype.h>
 #include <fstream>
 
-typedef collision_detection::CollisionWorldFCLL DefaultCWorldType;
-typedef collision_detection::CollisionRobotFCLL DefaultCRobotType;
+typedef collision_detection::CollisionWorldVoxel DefaultCWorldType;
+typedef collision_detection::CollisionRobotVoxel DefaultCRobotType;
 
 class FclCollisionDetectionTester : public testing::Test
 {
@@ -343,8 +343,8 @@ TEST_F(FclCollisionDetectionTester, DiffSceneTester)
   collision_detection::CollisionRequest req;
   collision_detection::CollisionResult res;
 
-  collision_detection::CollisionRobotFCLL new_crobot(
-      *(dynamic_cast<collision_detection::CollisionRobotFCLL*>(crobot_.get())));
+  collision_detection::CollisionRobotVoxel new_crobot(
+      *(dynamic_cast<collision_detection::CollisionRobotVoxel*>(crobot_.get())));
 
   ros::WallTime before = ros::WallTime::now();
   new_crobot.checkSelfCollision(req, res, robot_state);
@@ -376,8 +376,8 @@ TEST_F(FclCollisionDetectionTester, DiffSceneTester)
   // the first check is going to take a while, as data must be constructed
   EXPECT_LT(second_check, .1);
 
-  collision_detection::CollisionRobotFCLL other_new_crobot(
-      *(dynamic_cast<collision_detection::CollisionRobotFCLL*>(crobot_.get())));
+  collision_detection::CollisionRobotVoxel other_new_crobot(
+      *(dynamic_cast<collision_detection::CollisionRobotVoxel*>(crobot_.get())));
   before = ros::WallTime::now();
   new_crobot.checkSelfCollision(req, res, robot_state);
   first_check = (ros::WallTime::now() - before).toSec();

@@ -34,21 +34,21 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_ROBOT_
-#define MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_ROBOT_
+#ifndef MOVEIT_COLLISION_DETECTION_VOXEL_COLLISION_ROBOT_
+#define MOVEIT_COLLISION_DETECTION_VOXEL_COLLISION_ROBOT_
 
-#include <moveit_tutorials/collision_detection_fcll/collision_common.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_common.h>
 
 namespace collision_detection
 {
-class CollisionRobotFCLL : public CollisionRobot
+class CollisionRobotVoxel : public CollisionRobot
 {
-  friend class CollisionWorldFCLL;
+  friend class CollisionWorldVoxel;
 
 public:
-  CollisionRobotFCLL(const robot_model::RobotModelConstPtr& robot_model, double padding = 0.0, double scale = 1.0);
+  CollisionRobotVoxel(const robot_model::RobotModelConstPtr& robot_model, double padding = 0.0, double scale = 1.0);
 
-  CollisionRobotFCLL(const CollisionRobotFCLL& other);
+  CollisionRobotVoxel(const CollisionRobotVoxel& other);
 
   void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
                           const robot_state::RobotState& state) const override;

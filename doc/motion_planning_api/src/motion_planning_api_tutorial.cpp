@@ -46,9 +46,9 @@
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
-#include <moveit_tutorials/collision_detection_fcll/collision_detector_allocator_fcl.h>
-#include <moveit_tutorials/collision_detection_fcll/collision_world_fcl.h>
-#include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_detector_allocator_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_world_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
 #include <boost/scoped_ptr.hpp>
 
 int main(int argc, char** argv)
@@ -81,10 +81,10 @@ int main(int argc, char** argv)
 
   robot_model::RobotModelPtr robot_model = robot_model_loader->getModel();
   planning_scene::PlanningScenePtr planning_scene(new planning_scene::PlanningScene(robot_model));
-  // collision_detection::CollisionDetectorAllocatorPtr aa = collision_detection::CollisionDetectorAllocatorFCLL::create();
+  // collision_detection::CollisionDetectorAllocatorPtr aa = collision_detection::CollisionDetectorAllocatorVoxel::create();
   // std::cout << aa->getName() << std::endl;
-  // planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
-  planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
+  // planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create());
+  planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
 
   collision_detection::CollisionResult t_res;
   collision_detection::CollisionRequest t_req;
@@ -112,8 +112,8 @@ int main(int argc, char** argv)
   robot_state::RobotStatePtr robot_state(new moveit::core::RobotState(planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentState()));
 
   const robot_state::JointModelGroup* joint_model_group = robot_state->getJointModelGroup(PLANNING_GROUP);
-  // planning_scene_monitor::LockedPlanningSceneRO(psm)->addCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create());
-  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorFCLL::create(), true);
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->addCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create());
+  // planning_scene_monitor::LockedPlanningSceneRO(psm)->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
 
   // Using the :moveit_core:`RobotModel`, we can construct a :planning_scene:`PlanningScene`
   // that maintains the state of the world (including the robot).

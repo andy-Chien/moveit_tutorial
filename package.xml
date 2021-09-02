@@ -102,7 +102,7 @@
 
   <test_depend>moveit_resources_panda_moveit_config</test_depend>
   <export>
-    <moveit_core plugin="${prefix}/doc/collision_detection_fcll/collision_detector_fcl_description_test.xml"/>
+    <moveit_core plugin="${prefix}/doc/collision_detection_voxel/collision_detector_voxel_description.xml"/>
   </export>
 
 </package>

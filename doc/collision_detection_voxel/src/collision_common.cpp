@@ -34,9 +34,9 @@
 
 /* Author: Ioan Sucan, Jia Pan */
 
-#include <moveit_tutorials/collision_detection_fcll/collision_common.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_common.h>
 #include <geometric_shapes/shapes.h>
-#include <moveit_tutorials/collision_detection_fcll/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/geometry/bvh/BVH_model.h>

@@ -34,8 +34,8 @@
 
 /* Author: Benjamin Scholz */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCLL_COMPAT_
-#define MOVEIT_COLLISION_DETECTION_FCLL_COMPAT_
+#ifndef MOVEIT_COLLISION_DETECTION_Voxel_COMPAT_
+#define MOVEIT_COLLISION_DETECTION_Voxel_COMPAT_
 
 #include <fcl/config.h>
 

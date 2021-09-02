@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
-#define MOVEIT_COLLISION_DETECTION_FCLL_COLLISION_WORLD_FCL_
+#ifndef MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_FCL_
+#define MOVEIT_COLLISION_DETECTION_Voxel_COLLISION_WORLD_FCL_
 
 #include <cstdlib>
 #include <signal.h>
@@ -55,8 +55,8 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
 
-#include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
-#include <moveit_tutorials/collision_detection_fcll/fcl_compat.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/fcl_compat.h>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_collision_manager.h>
@@ -68,13 +68,13 @@
 
 namespace collision_detection
 {
-class CollisionWorldFCLL : public CollisionWorld
+class CollisionWorldVoxel : public CollisionWorld
 {
 public:
-  CollisionWorldFCLL();
-  explicit CollisionWorldFCLL(const WorldPtr& world);
-  CollisionWorldFCLL(const CollisionWorldFCLL& other, const WorldPtr& world);
-  ~CollisionWorldFCLL() override;
+  CollisionWorldVoxel();
+  explicit CollisionWorldVoxel(const WorldPtr& world);
+  CollisionWorldVoxel(const CollisionWorldVoxel& other, const WorldPtr& world);
+  ~CollisionWorldVoxel() override;
 
   void print_fuck()
   {

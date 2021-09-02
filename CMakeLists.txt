@@ -58,14 +58,14 @@ find_package(urdfdom_headers REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
     doc/interactivity/include
-    doc/collision_detection_fcll/include
+    doc/collision_detection_voxel/include
 )
 
 catkin_package(
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
-    moveit_collision_detection_fcll
+    moveit_collision_detection_voxel
   CATKIN_DEPENDS
     eigen_stl_containers
     geometric_shapes
@@ -132,5 +132,5 @@ add_subdirectory(doc/state_display)
 add_subdirectory(doc/interactivity)
 add_subdirectory(doc/pick_place)
 add_subdirectory(doc/perception_pipeline)
-add_subdirectory(doc/collision_detection_fcll)
+add_subdirectory(doc/collision_detection_voxel)
 add_subdirectory(example_how_to_link)

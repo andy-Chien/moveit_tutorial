@@ -34,18 +34,18 @@
 
 /* Author: Acorn Pooley, Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_FCLL_H_
-#define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_FCLL_H_
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_VOXEL_H_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_VOXEL_H_
 
 #include <moveit/collision_detection/collision_detector_allocator.h>
-#include <moveit_tutorials/collision_detection_fcll/collision_robot_fcl.h>
-#include <moveit_tutorials/collision_detection_fcll/collision_world_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_robot_fcl.h>
+#include <moveit_tutorials/collision_detection_voxel/collision_world_fcl.h>
 
 namespace collision_detection
 {
 /** \brief An allocator for FCL collision detectors */
-class CollisionDetectorAllocatorFCLL
-  : public CollisionDetectorAllocatorTemplate<CollisionWorldFCLL, CollisionRobotFCLL, CollisionDetectorAllocatorFCLL>
+class CollisionDetectorAllocatorVoxel
+  : public CollisionDetectorAllocatorTemplate<CollisionWorldVoxel, CollisionRobotVoxel, CollisionDetectorAllocatorVoxel>
 {
 public:
   // const std::string& getName() const override;
