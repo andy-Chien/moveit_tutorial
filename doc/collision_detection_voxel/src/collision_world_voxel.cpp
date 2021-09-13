@@ -402,11 +402,11 @@ void CollisionWorldVoxel::voxelInit()
   gvl->addRobot("myUrdfRobot", "ur5_50/ur5.urdf", true);
   gvl->addRobot("myUrdfRobot2", "ur5_50/ur5_2.urdf", true);
   std::cout<<"sub  1 gogogogogog"<<std::endl;
-  ros::Subscriber sub1 = n.subscribe("joint_statesssssssssssssssssssssssssssssssssssssssss", 1, &CollisionWorldVoxel::jointStateCallback, this);
+  robot_sub = n.subscribe("/joint_states", 1, &CollisionWorldVoxel::jointStateCallback, this);
   // ros::Subscriber sub2 = n.subscribe("obstacle_pose", 1, obstaclePoseCallback);
   // ros::Subscriber sub = n.subscribe<pcl::PointCloud<pcl::PointXYZ> >(point_cloud_topic, 1, &CollisionWorldVoxel::pointCloudCallback, this);
   std::cout<<"sub  2 gogogogogog"<<std::endl;
-  ros::Subscriber sub = n.subscribe<pcl::PointCloud<pcl::PointXYZ> >("cccccccccccccccccccccccccccccccccccccccccccccccccccc", 1, &CollisionWorldVoxel::pointCloudCallback, this);
+  point_sub = n.subscribe<pcl::PointCloud<pcl::PointXYZ> >("/camera/depth/color/points", 1, &CollisionWorldVoxel::pointCloudCallback, this);
   std::cout<<" gogogogogog"<<std::endl;
   // ros::NodeHandle n;&BaseModule::vectorMoveMsgCallback
   // ros::Subscriber sub1 = n.subscribe("joint_states", 1, jointStateCallback);

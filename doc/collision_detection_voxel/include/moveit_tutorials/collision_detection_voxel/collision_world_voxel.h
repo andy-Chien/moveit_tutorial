@@ -121,6 +121,8 @@ protected:
 
 private:
   ros::NodeHandle n;
+  ros::Subscriber point_sub;
+  ros::Subscriber robot_sub;
   shared_ptr<GpuVoxels> gvl;
 
   Vector3ui map_dimensions;

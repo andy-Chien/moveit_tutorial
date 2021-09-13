@@ -85,7 +85,7 @@ int main(int argc, char** argv)
   // std::cout << aa->getName() << std::endl;
   // planning_scene->addCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create());
   std::cout<<"1.-----------------"<<std::endl;
-  planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
+  // planning_scene->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorVoxel::create(), true);
   std::cout<<"2.-----------------"<<std::endl;
 
   collision_detection::CollisionResult t_res;
@@ -94,8 +94,10 @@ int main(int argc, char** argv)
   std::cout<<"3.-----------------"<<std::endl;
   robot_state::RobotState& t_state = planning_scene->getCurrentStateNonConst();
   std::cout<<"4.-----------------"<<std::endl;
+  ros::Time begin_1 = ros::Time::now();
   planning_scene->checkCollision(t_req, t_res);
-  std::cout<<"5.-----------------"<<std::endl;
+  ros::Time end_1 = ros::Time::now();
+  std::cout<<"5.-----------------"<<(end_1 - begin_1).toSec()<<" sec."<<std::endl;
   // planning_scene->getCollisionWorld()->checkRobotCollision(t_req, t_res, planning_scene->getCollisionRobot(), t_state);
   // planning_scene->getCollisionWorld()->print_fuck();
   planning_scene_monitor::PlanningSceneMonitorPtr psm(
@@ -222,6 +224,11 @@ int main(int argc, char** argv)
   std::cout<<"================================== collision check spend "<<(end - begin).toSec()<<" sec."<<std::endl;
   std::cout<<col_res.collision<<std::endl;
   std::cout<<"17.-----------------"<<std::endl;
+  ros::Time begin_2 = ros::Time::now();
+  psm->getPlanningScene()->checkCollision(col_req, col_res);
+  // planning_scene->checkCollision(col_req, col_res);
+  ros::Time end_2 = ros::Time::now();
+  std::cout<<"5.-----------------"<<(end_1 - begin_1).toSec()<<" sec."<<std::endl;
   // planning_scene = psm->getPlanningScene();
   if (psm->updatesScene(planning_scene_monitor::LockedPlanningSceneRO(psm)))
     std::cout<<"Scene updated"<<std::endl;
